@@ -1,10 +1,30 @@
 ---
+import { getCollection } from 'astro:content';
 import Layout from '../layouts/Layout.astro';
 import CatalogApp from '../components/CatalogApp.jsx';
+
+// Fetch all markdown/YAML items created by Sveltia CMS
+const rawItems = await getCollection('catalog');
+
+// Transform Astro entries into a clean array of objects for React
+const initialItems = rawItems.map(item => ({
+  id: item.slug,
+  title: item.data.title,
+  price: item.data.price,
+  currentBid: item.data.currentBid,
+  category: item.data.category,
+  condition: item.data.condition,
+  image: item.data.image,
+  image2: item.data.image2,
+  image3: item.data.image3,
+  description: item.data.description,
+  sellerTag: item.data.sellerTag,
+  ...item.data
+}));
 ---
 
 <Layout title="Consignment Direct Network | megusta.escatega.com">
   <main>
-    <CatalogApp client:load />
+    <CatalogApp client:load initialItems={initialItems} />
   </main>
 </Layout>

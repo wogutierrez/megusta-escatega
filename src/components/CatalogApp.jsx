@@ -120,8 +120,11 @@ const INITIAL_ITEMS = [
 
 const CATEGORIES = ['All', 'Electronics', 'Clothing', 'Furniture', 'Vehicles', 'Real Estate', 'Others'];
 
-export default function App() {
-  const [items, setItems] = useState(INITIAL_ITEMS);
+export default function App({ initialItems = [] }) {
+  // If initialItems are passed from Astro/CMS, use them; otherwise fallback to mock inventory
+  const [items, setItems] = useState(
+    initialItems.length > 0 ? initialItems : INITIAL_ITEMS
+  );
   const [selectedCategory, setSelectedCategory] = useState('All');
   const [searchQuery, setSearchQuery] = useState('');
   
@@ -187,7 +190,7 @@ export default function App() {
         return {
           ...item,
           currentBid: bidValue,
-          bids: [newBidObj, ...item.bids]
+          bids: [newBidObj, ...(item.bids || [])]
         };
       }
       return item;
@@ -206,36 +209,35 @@ export default function App() {
   const filteredItems = items.filter(item => {
     const matchesCategory = selectedCategory === 'All' || item.category === selectedCategory;
     const matchesSearch = item.title.toLowerCase().includes(searchQuery.toLowerCase()) || 
-                          item.description.toLowerCase().includes(searchQuery.toLowerCase());
+                          (item.description && item.description.toLowerCase().includes(searchQuery.toLowerCase()));
     return matchesCategory && matchesSearch;
   });
 
   const sampleCMSYaml = `backend:
   name: github
-  repo: escatega/megusta-catalog
+  repo: wogutierrez/megusta-escatega
   branch: main
 
 media_folder: "public/uploads"
 public_folder: "/uploads"
 
 collections:
-  - name: "items"
-    label: "Consignment Items"
-    folder: "content/items"
+  - name: "catalog"
+    label: "Artículos del Catálogo"
+    folder: "src/content/catalog"
     create: true
     slug: "{{slug}}"
     fields:
-      - { label: "Title", name: "title", widget: "string" }
-      - { label: "Category", name: "category", widget: "select", options: ["Electronics", "Clothing", "Furniture", "Vehicles", "Real Estate", "Others"] }
-      - { label: "Buy Now Price ($)", name: "price", widget: "number", value_type: "int" }
-      - { label: "Starting Bid ($)", name: "currentBid", widget: "number", value_type: "int" }
-      - { label: "Min Increment ($)", name: "minBidIncrement", widget: "number", default: 10 }
-      - { label: "Condition", name: "condition", widget: "string", default: "As-Is (Good)" }
-      - { label: "Location", name: "location", widget: "string" }
-      - { label: "Description", name: "description", widget: "markdown" }
-      - { label: "Image 1", name: "image1", widget: "image" }
-      - { label: "Image 2", name: "image2", widget: "image", required: false }
-      - { label: "Image 3", name: "image3", widget: "image", required: false }`;
+      - { label: "Título", name: "title", widget: "string" }
+      - { label: "Precio Fijo ($)", name: "price", widget: "number", value_type: "float" }
+      - { label: "Puja Mínima ($)", name: "currentBid", widget: "number", value_type: "float" }
+      - { label: "Categoría", name: "category", widget: "select", options: ["Electrónica", "Muebles", "Vehículos", "Ropa", "Hogar", "Otros"] }
+      - { label: "Condición", name: "condition", widget: "select", options: ["Como Nuevo", "Excelente", "Bueno", "Usado"] }
+      - { label: "Imagen Principal", name: "image", widget: "image" }
+      - { label: "Imagen 2", name: "image2", widget: "image", required: false }
+      - { label: "Imagen 3", name: "image3", widget: "image", required: false }
+      - { label: "Descripción", name: "description", widget: "text" }
+      - { label: "Etiqueta del Vendedor", name: "sellerTag", widget: "string", default: "Miembro Verificado" }`;
 
   const copyYamlToClipboard = () => {
     navigator.clipboard.writeText(sampleCMSYaml);
@@ -606,12 +608,12 @@ collections:
 
             <div className="my-4 p-3 rounded-xl bg-slate-950 border border-slate-800/80 flex items-center justify-between text-xs">
               <span className="text-slate-400">Total Bids Recorded</span>
-              <span className="font-mono font-bold text-emerald-400">{activeHistoryItem.bids.length}</span>
+              <span className="font-mono font-bold text-emerald-400">{activeHistoryItem.bids ? activeHistoryItem.bids.length : 0}</span>
             </div>
 
             {/* Bids Log */}
             <div className="flex-1 overflow-y-auto space-y-2 pr-1 my-2">
-              {activeHistoryItem.bids.length === 0 ? (
+              {(!activeHistoryItem.bids || activeHistoryItem.bids.length === 0) ? (
                 <div className="text-center py-8 text-slate-500 text-xs">
                   No bids recorded yet. Be the first to place a bid!
                 </div>
@@ -797,14 +799,27 @@ collections:
 function ProductCard({ item, onBuy, onBid, onViewHistory }) {
   const [currentImgIndex, setCurrentImgIndex] = useState(0);
 
+  // Normalize images array to safely handle both CMS items and mock items
+  const imagesList = (item.images && item.images.length > 0) 
+    ? item.images 
+    : [item.image, item.image2, item.image3].filter(Boolean);
+
+  const activeImage = imagesList.length > 0 
+    ? imagesList[currentImgIndex] 
+    : 'https://images.unsplash.com/photo-1523275335684-37898b6baf30?auto=format&fit=crop&w=800&q=80';
+
   const nextImage = (e) => {
     e.stopPropagation();
-    setCurrentImgIndex((prev) => (prev + 1) % item.images.length);
+    if (imagesList.length > 1) {
+      setCurrentImgIndex((prev) => (prev + 1) % imagesList.length);
+    }
   };
 
   const prevImage = (e) => {
     e.stopPropagation();
-    setCurrentImgIndex((prev) => (prev - 1 + item.images.length) % item.images.length);
+    if (imagesList.length > 1) {
+      setCurrentImgIndex((prev) => (prev - 1 + imagesList.length) % imagesList.length);
+    }
   };
 
   return (
@@ -813,7 +828,7 @@ function ProductCard({ item, onBuy, onBid, onViewHistory }) {
       {/* 3-Photo Carousel Header */}
       <div className="relative aspect-[4/3] bg-slate-950 overflow-hidden">
         <img 
-          src={item.images[currentImgIndex]} 
+          src={activeImage} 
           alt={item.title}
           className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
         />
@@ -821,10 +836,10 @@ function ProductCard({ item, onBuy, onBid, onViewHistory }) {
         {/* Category & Condition Overlay */}
         <div className="absolute top-3 left-3 flex flex-wrap gap-1.5 z-10">
           <span className="px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider bg-slate-950/80 backdrop-blur-md text-emerald-400 border border-emerald-500/30 rounded-full">
-            {item.category}
+            {item.category || 'General'}
           </span>
           <span className="px-2.5 py-1 text-[10px] font-semibold bg-slate-950/80 backdrop-blur-md text-slate-300 border border-slate-800 rounded-full">
-            {item.condition}
+            {item.condition || 'As-Is'}
           </span>
         </div>
 
@@ -832,12 +847,12 @@ function ProductCard({ item, onBuy, onBid, onViewHistory }) {
         <div className="absolute top-3 right-3 z-10">
           <span className="px-2.5 py-1 text-[10px] font-medium bg-slate-950/80 backdrop-blur-md text-slate-200 border border-slate-800 rounded-full flex items-center gap-1 shadow-md">
             <ShieldCheck className="w-3.5 h-3.5 text-emerald-400" />
-            <span className="hidden sm:inline">Verified Acquaintance</span>
+            <span className="hidden sm:inline">{item.sellerTag || 'Verified Acquaintance'}</span>
           </span>
         </div>
 
         {/* Carousel controls */}
-        {item.images.length > 1 && (
+        {imagesList.length > 1 && (
           <>
             <button 
               onClick={prevImage}
@@ -854,7 +869,7 @@ function ProductCard({ item, onBuy, onBid, onViewHistory }) {
             
             {/* Dots indicator */}
             <div className="absolute bottom-3 left-1/2 -translate-x-1/2 flex items-center gap-1.5 z-10">
-              {item.images.map((_, idx) => (
+              {imagesList.map((_, idx) => (
                 <button
                   key={idx}
                   onClick={(e) => { e.stopPropagation(); setCurrentImgIndex(idx); }}
@@ -887,12 +902,12 @@ function ProductCard({ item, onBuy, onBid, onViewHistory }) {
           <div className="grid grid-cols-2 gap-2 mb-4 p-3 rounded-xl bg-slate-950/60 border border-slate-800/80">
             <div>
               <span className="text-[10px] uppercase font-mono text-slate-500 block">Buy Now Price</span>
-              <span className="text-lg font-black text-emerald-400">${item.price}</span>
+              <span className="text-lg font-black text-emerald-400">${item.price || 0}</span>
             </div>
             <div className="text-right">
               <span className="text-[10px] uppercase font-mono text-slate-500 block">Highest Bid</span>
               <div className="flex items-center justify-end gap-1">
-                <span className="text-lg font-bold text-white">${item.currentBid}</span>
+                <span className="text-lg font-bold text-white">${item.currentBid || 0}</span>
                 <button 
                   onClick={onViewHistory}
                   title="View Bidder History"
