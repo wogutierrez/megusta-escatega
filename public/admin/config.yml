@@ -1,0 +1,25 @@
+backend:
+  name: github
+  repo: wogutierrez/megusta-escatega
+  branch: main
+
+media_folder: "public/uploads"
+public_folder: "/uploads"
+
+collections:
+  - name: "catalog"
+    label: "Artículos del Catálogo"
+    folder: "src/content/catalog"
+    create: true
+    slug: "{{slug}}"
+    fields:
+      - { label: "Título", name: "title", widget: "string" }
+      - { label: "Precio Fijo ($)", name: "price", widget: "number", value_type: "float" }
+      - { label: "Puja Mínima ($)", name: "currentBid", widget: "number", value_type: "float" }
+      - { label: "Categoría", name: "category", widget: "select", options: ["Electrónica", "Muebles", "Vehículos", "Ropa", "Hogar", "Otros"] }
+      - { label: "Condición", name: "condition", widget: "select", options: ["Como Nuevo", "Excelente", "Bueno", "Usado"] }
+      - { label: "Imagen Principal", name: "image", widget: "image" }
+      - { label: "Imagen 2", name: "image2", widget: "image", required: false }
+      - { label: "Imagen 3", name: "image3", widget: "image", required: false }
+      - { label: "Descripción", name: "description", widget: "text" }
+      - { label: "Etiqueta del Vendedor", name: "sellerTag", widget: "string", default: "Miembro Verificado" }
