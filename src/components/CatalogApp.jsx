@@ -828,10 +828,10 @@ function ProductCard({ item, onBuy, onBid, onViewHistory }) {
       {/* 3-Photo Carousel Header */}
       <div className="relative aspect-[4/3] bg-slate-950 overflow-hidden">
         <img 
-          src={activeImage} 
-          alt={item.title}
-          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-        />
+            src={activeImage} 
+            alt={item.title}
+            className="w-full h-full object-contain group-hover:scale-105 transition-transform duration-500"
+            />
 
         {/* Category & Condition Overlay */}
         <div className="absolute top-3 left-3 flex flex-wrap gap-1.5 z-10">
