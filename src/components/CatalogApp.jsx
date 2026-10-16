@@ -831,7 +831,7 @@ function ProductCard({ item, onBuy, onBid, onViewHistory }) {
             src={activeImage} 
             alt={item.title}
             className="w-full h-full object-contain group-hover:scale-105 transition-transform duration-500"
-            />
+        />
 
         {/* Category & Condition Overlay */}
         <div className="absolute top-3 left-3 flex flex-wrap gap-1.5 z-10">
