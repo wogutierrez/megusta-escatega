@@ -134,8 +134,8 @@ export default function App({ initialItems = [] }) {
   const [activeHistoryItem, setActiveHistoryItem] = useState(null);
   const [showCMSGuide, setShowCMSGuide] = useState(false);
   const [showConsignmentModal, setShowConsignmentModal] = useState(false);
-  
-  // Registration States
+
+  // Registration states
   const [showRegisterModal, setShowRegisterModal] = useState(false);
   const [registeredUser, setRegisteredUser] = useState(null);
   const [regForm, setRegForm] = useState({ firstName: '', lastName: '', email: '', phone: '' });
@@ -521,8 +521,15 @@ collections:
                   <span className="font-mono text-emerald-400">{registeredUser.pseudonym}</span>
                 </div>
               ) : (
-                <div className="p-3 bg-amber-500/10 border border-amber-500/20 rounded-lg text-xs text-amber-300">
-                  Please register your details before making a purchase request.
+                <div className="p-3 bg-amber-500/10 border border-amber-500/20 rounded-lg text-xs text-amber-300 flex items-center justify-between">
+                  <span>Please register your details before making a purchase.</span>
+                  <button 
+                    type="button"
+                    onClick={() => { setActiveBuyItem(null); setShowRegisterModal(true); }}
+                    className="px-2.5 py-1 bg-amber-500 text-slate-950 font-bold rounded text-[11px]"
+                  >
+                    Register Now
+                  </button>
                 </div>
               )}
 
@@ -540,7 +547,8 @@ collections:
                 </button>
                 <button 
                   type="submit"
-                  className="px-5 py-2 text-xs font-bold bg-emerald-500 text-slate-950 hover:bg-emerald-400 rounded-lg transition-all shadow-lg shadow-emerald-500/20"
+                  disabled={!registeredUser}
+                  className="px-5 py-2 text-xs font-bold bg-emerald-500 text-slate-950 hover:bg-emerald-400 rounded-lg transition-all shadow-lg shadow-emerald-500/20 disabled:opacity-50"
                 >
                   Confirm Purchase Request
                 </button>
@@ -585,8 +593,15 @@ collections:
                   <span className="text-slate-500 text-[10px]">{registeredUser.email}</span>
                 </div>
               ) : (
-                <div className="p-3 bg-amber-500/10 border border-amber-500/20 rounded-lg text-xs text-amber-300">
-                  You must register your profile before placing a bid.
+                <div className="p-3 bg-amber-500/10 border border-amber-500/20 rounded-lg text-xs text-amber-300 flex items-center justify-between">
+                  <span>You must register your profile before placing a bid.</span>
+                  <button 
+                    type="button"
+                    onClick={() => { setActiveBidItem(null); setShowRegisterModal(true); }}
+                    className="px-2.5 py-1 bg-amber-500 text-slate-950 font-bold rounded text-[11px]"
+                  >
+                    Register Now
+                  </button>
                 </div>
               )}
 
@@ -635,7 +650,8 @@ collections:
                 </button>
                 <button 
                   type="submit"
-                  className="px-5 py-2 text-xs font-bold bg-teal-500 text-slate-950 hover:bg-teal-400 rounded-lg transition-all shadow-lg shadow-teal-500/20"
+                  disabled={!registeredUser}
+                  className="px-5 py-2 text-xs font-bold bg-teal-500 text-slate-950 hover:bg-teal-400 rounded-lg transition-all shadow-lg shadow-teal-500/20 disabled:opacity-50"
                 >
                   Submit Private Bid
                 </button>
@@ -1041,7 +1057,7 @@ function ProductCard({ item, onBuy, onBid, onViewHistory }) {
               <span className="text-lg font-black text-emerald-400">${item.price || 0}</span>
             </div>
             <div className="text-right">
-              <span className="text-[10px] uppercase font-mono text-slate-500 block">Highest Bid</span>
+              <span className="text-[10px] uppercase font-mono text-slate-500 block">Highest Bidder</span>
               <div className="flex items-center justify-end gap-1">
                 <span className="text-lg font-bold text-white">${item.currentBid || 0}</span>
                 <button 
