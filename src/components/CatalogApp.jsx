@@ -888,7 +888,6 @@ collections:
                 type="button"
                 onClick={() => { 
                   setShowRegisterModal(false); 
-                  // You can create a quick sign-in prompt or toggle state here
                   const signInEmail = prompt("Enter your registered email address to restore your handle:");
                   if (signInEmail) {
                     fetch('/api/login', {
@@ -982,6 +981,10 @@ collections:
           </div>
         </div>
       )}
+
+    </div>
+  );
+}
 
 // Subcomponent: Product Card with 3-Photo Gallery & Quick Actions
 function ProductCard({ item, onBuy, onBid, onViewHistory }) {
