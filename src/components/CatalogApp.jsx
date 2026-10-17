@@ -134,15 +134,60 @@ export default function App({ initialItems = [] }) {
   const [activeHistoryItem, setActiveHistoryItem] = useState(null);
   const [showCMSGuide, setShowCMSGuide] = useState(false);
   const [showConsignmentModal, setShowConsignmentModal] = useState(false);
+  
+  // Registration States
+  const [showRegisterModal, setShowRegisterModal] = useState(false);
+  const [registeredUser, setRegisteredUser] = useState(null);
+  const [regForm, setRegForm] = useState({ firstName: '', lastName: '', email: '', phone: '' });
+  const [regLoading, setRegLoading] = useState(false);
+  const [regMessage, setRegMessage] = useState('');
 
   // Form states
-  const [buyerEmail, setBuyerEmail] = useState('');
-  const [bidderEmail, setBidderEmail] = useState('');
   const [customBidAmount, setCustomBidAmount] = useState('');
   
   // Toast Notification System
   const [toast, setToast] = useState(null);
   const [copiedYaml, setCopiedYaml] = useState(false);
+
+  // Check localStorage on load for saved user handle
+  useEffect(() => {
+    const savedUser = localStorage.getItem('megusta_user');
+    if (savedUser) {
+      setRegisteredUser(JSON.parse(savedUser));
+    }
+  }, []);
+
+  const handleRegisterSubmit = async (e) => {
+    e.preventDefault();
+    setRegLoading(true);
+    setRegMessage('');
+
+    try {
+      const res = await fetch('/api/register', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(regForm)
+      });
+      const data = await res.json();
+
+      if (data.success) {
+        const userData = { email: regForm.email, pseudonym: data.pseudonym };
+        localStorage.setItem('megusta_user', JSON.stringify(userData));
+        setRegisteredUser(userData);
+        setRegMessage(`Registration Complete! Your private bidder handle is: ${data.pseudonym}`);
+        setTimeout(() => {
+          setShowRegisterModal(false);
+          setRegMessage('');
+        }, 2500);
+      } else {
+        setRegMessage(data.error || 'Registration failed.');
+      }
+    } catch (err) {
+      setRegMessage('Network error. Please try again.');
+    } finally {
+      setRegLoading(false);
+    }
+  };
 
   const showNotification = (message, title = 'NotificationSent') => {
     setToast({ title, message });
@@ -152,21 +197,26 @@ export default function App({ initialItems = [] }) {
   // Handle Instant Buy
   const handleConfirmBuy = (e) => {
     e.preventDefault();
-    if (!buyerEmail) return;
+    if (!registeredUser) {
+      setShowRegisterModal(true);
+      return;
+    }
 
     showNotification(
-      `Confirmation email dispatched to ${buyerEmail} & info@escatega.com. We will contact you directly to schedule delivery & payment!`,
+      `Confirmation email dispatched to ${registeredUser.email} & info@escatega.com. We will contact you directly to schedule delivery & payment!`,
       'Instant Buy Direct Request Sent'
     );
 
     setActiveBuyItem(null);
-    setBuyerEmail('');
   };
 
   // Handle Bidding
   const handlePlaceBid = (e) => {
     e.preventDefault();
-    if (!bidderEmail || !activeBidItem) return;
+    if (!registeredUser || !activeBidItem) {
+      setShowRegisterModal(true);
+      return;
+    }
 
     const minAllowed = activeBidItem.currentBid + activeBidItem.minBidIncrement;
     const bidValue = customBidAmount ? parseFloat(customBidAmount) : minAllowed;
@@ -176,7 +226,7 @@ export default function App({ initialItems = [] }) {
       return;
     }
 
-    const assignedPseudonym = generatePseudonym();
+    const assignedPseudonym = registeredUser.pseudonym;
 
     // Update state with new bid
     setItems(prevItems => prevItems.map(item => {
@@ -197,12 +247,11 @@ export default function App({ initialItems = [] }) {
     }));
 
     showNotification(
-      `Bid of $${bidValue} recorded under hidden handle [${assignedPseudonym}]. Email alerts sent to ${bidderEmail} and info@escatega.com.`,
+      `Bid of $${bidValue} recorded under hidden handle [${assignedPseudonym}]. Email alerts sent to ${registeredUser.email} and info@escatega.com.`,
       'Bid Placed Successfully'
     );
 
     setActiveBidItem(null);
-    setBidderEmail('');
     setCustomBidAmount('');
   };
 
@@ -282,6 +331,19 @@ collections:
 
           {/* Action Header Links */}
           <div className="flex items-center gap-2 sm:gap-3">
+            {registeredUser ? (
+              <span className="px-3 py-1 bg-amber-500/10 text-amber-400 border border-amber-500/20 rounded-full text-xs font-mono">
+                Handle: {registeredUser.pseudonym}
+              </span>
+            ) : (
+              <button
+                onClick={() => setShowRegisterModal(true)}
+                className="px-3.5 py-2 bg-amber-500 hover:bg-amber-600 text-slate-950 font-bold rounded-lg text-xs transition-all shadow-md"
+              >
+                Register to Bid / Buy
+              </button>
+            )}
+
             <button 
               onClick={() => setShowConsignmentModal(true)}
               className="px-3 py-2 text-xs sm:text-sm font-medium text-slate-300 hover:text-white bg-slate-800/80 hover:bg-slate-800 border border-slate-700/60 rounded-lg transition-all flex items-center gap-1.5"
@@ -453,20 +515,16 @@ collections:
             </div>
 
             <form onSubmit={handleConfirmBuy} className="mt-5 space-y-4">
-              <div>
-                <label className="block text-xs font-semibold text-slate-300 mb-1">Your Email Address</label>
-                <input 
-                  type="email" 
-                  required 
-                  placeholder="yourname@domain.com"
-                  value={buyerEmail}
-                  onChange={(e) => setBuyerEmail(e.target.value)}
-                  className="w-full bg-slate-950 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500"
-                />
-                <p className="text-[11px] text-slate-400 mt-1 flex items-center gap-1">
-                  <Lock className="w-3 h-3 text-slate-500" /> An alert will be sent to <span className="font-mono text-slate-300">info@escatega.com</span> & your email.
-                </p>
-              </div>
+              {registeredUser ? (
+                <div className="p-3 bg-slate-950 border border-slate-800 rounded-lg text-xs text-slate-300 flex items-center justify-between">
+                  <span>Purchasing as: <strong className="text-white">{registeredUser.email}</strong></span>
+                  <span className="font-mono text-emerald-400">{registeredUser.pseudonym}</span>
+                </div>
+              ) : (
+                <div className="p-3 bg-amber-500/10 border border-amber-500/20 rounded-lg text-xs text-amber-300">
+                  Please register your details before making a purchase request.
+                </div>
+              )}
 
               <div className="p-3 bg-amber-500/10 border border-amber-500/20 rounded-lg text-xs text-amber-200/90 leading-relaxed">
                 <strong>Consignment Direct Policy:</strong> Submitting this request reserves the item for 24 hours. The admin team will contact you to confirm inspection & payment.
@@ -521,17 +579,16 @@ collections:
             </div>
 
             <form onSubmit={handlePlaceBid} className="mt-5 space-y-4">
-              <div>
-                <label className="block text-xs font-semibold text-slate-300 mb-1">Your Email Address</label>
-                <input 
-                  type="email" 
-                  required 
-                  placeholder="yourname@domain.com"
-                  value={bidderEmail}
-                  onChange={(e) => setBidderEmail(e.target.value)}
-                  className="w-full bg-slate-950 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-teal-500 focus:ring-1 focus:ring-teal-500"
-                />
-              </div>
+              {registeredUser ? (
+                <div className="p-3 bg-slate-950 border border-slate-800 rounded-lg text-xs text-slate-300 flex items-center justify-between">
+                  <span>Bidding as handle: <strong className="text-emerald-400 font-mono">{registeredUser.pseudonym}</strong></span>
+                  <span className="text-slate-500 text-[10px]">{registeredUser.email}</span>
+                </div>
+              ) : (
+                <div className="p-3 bg-amber-500/10 border border-amber-500/20 rounded-lg text-xs text-amber-300">
+                  You must register your profile before placing a bid.
+                </div>
+              )}
 
               <div>
                 <label className="block text-xs font-semibold text-slate-300 mb-1">Your Bid Amount ($ USD)</label>
@@ -787,6 +844,85 @@ collections:
                 Close Setup Guide
               </button>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* 6. REGISTRATION MODAL */}
+      {showRegisterModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4">
+          <div className="bg-slate-900 border border-slate-800 rounded-2xl p-6 max-w-md w-full shadow-2xl relative">
+            <button 
+              onClick={() => setShowRegisterModal(false)}
+              className="absolute top-4 right-4 text-slate-400 hover:text-white"
+            >
+              <X className="w-5 h-5" />
+            </button>
+            
+            <h2 className="text-xl font-bold text-white mb-1">Join Megusta Network</h2>
+            <p className="text-xs text-slate-400 mb-6">Register your details once to receive private bidding handles and instant purchase updates.</p>
+
+            {regMessage && (
+              <div className="mb-4 p-3 rounded-lg text-xs font-semibold bg-amber-500/10 text-amber-300 border border-amber-500/20">
+                {regMessage}
+              </div>
+            )}
+
+            <form onSubmit={handleRegisterSubmit} className="space-y-4">
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-xs font-medium text-slate-300 mb-1">First Name</label>
+                  <input 
+                    type="text" 
+                    required
+                    value={regForm.firstName}
+                    onChange={(e) => setRegForm({...regForm, firstName: e.target.value})}
+                    className="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-amber-500"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-medium text-slate-300 mb-1">Last Name</label>
+                  <input 
+                    type="text" 
+                    required
+                    value={regForm.lastName}
+                    onChange={(e) => setRegForm({...regForm, lastName: e.target.value})}
+                    className="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-amber-500"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-xs font-medium text-slate-300 mb-1">Email Address</label>
+                <input 
+                  type="email" 
+                  required
+                  value={regForm.email}
+                  onChange={(e) => setRegForm({...regForm, email: e.target.value})}
+                  className="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-amber-500"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-medium text-slate-300 mb-1">Phone Number</label>
+                <input 
+                  type="tel" 
+                  required
+                  placeholder="+263 ..."
+                  value={regForm.phone}
+                  onChange={(e) => setRegForm({...regForm, phone: e.target.value})}
+                  className="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-amber-500"
+                />
+              </div>
+
+              <button
+                type="submit"
+                disabled={regLoading}
+                className="w-full py-3 bg-amber-500 hover:bg-amber-600 font-semibold text-slate-950 rounded-lg transition-all text-sm mt-2 disabled:opacity-50"
+              >
+                {regLoading ? 'Registering...' : 'Complete Registration'}
+              </button>
+            </form>
           </div>
         </div>
       )}
