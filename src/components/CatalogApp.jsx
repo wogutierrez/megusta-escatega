@@ -864,17 +864,57 @@ collections:
         </div>
       )}
 
-      {/* 6. REGISTRATION MODAL */}
+      {/* 6. REGISTRATION / SIGN-IN MODAL */}
       {showRegisterModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4">
           <div className="bg-slate-900 border border-slate-800 rounded-2xl p-6 max-w-md w-full shadow-2xl relative">
             <button 
-              onClick={() => setShowRegisterModal(false)}
+              onClick={() => { setShowRegisterModal(false); setRegMessage(''); }}
               className="absolute top-4 right-4 text-slate-400 hover:text-white"
             >
               <X className="w-5 h-5" />
             </button>
             
+            {/* Modal Tabs: Register vs Sign In */}
+            <div className="flex border-b border-slate-800 mb-5">
+              <button
+                type="button"
+                onClick={() => { setRegMessage(''); }}
+                className="flex-1 pb-3 text-xs font-bold text-center border-b-2 border-amber-500 text-white"
+              >
+                Register New Profile
+              </button>
+              <button
+                type="button"
+                onClick={() => { 
+                  setShowRegisterModal(false); 
+                  // You can create a quick sign-in prompt or toggle state here
+                  const signInEmail = prompt("Enter your registered email address to restore your handle:");
+                  if (signInEmail) {
+                    fetch('/api/login', {
+                      method: 'POST',
+                      headers: { 'Content-Type': 'application/json' },
+                      body: JSON.stringify({ email: signInEmail })
+                    })
+                    .then(res => res.json())
+                    .then(data => {
+                      if (data.success) {
+                        const userData = { email: signInEmail, pseudonym: data.pseudonym };
+                        localStorage.setItem('megusta_user', JSON.stringify(userData));
+                        setRegisteredUser(userData);
+                        alert(`Welcome back, ${data.firstName}! Your handle [${data.pseudonym}] has been restored.`);
+                      } else {
+                        alert(data.error || 'Email not found.');
+                      }
+                    }).catch(() => alert('Network error.'));
+                  }
+                }}
+                className="flex-1 pb-3 text-xs font-semibold text-center border-b-2 border-transparent text-slate-400 hover:text-slate-200"
+              >
+                Already Registered? Sign In
+              </button>
+            </div>
+
             <h2 className="text-xl font-bold text-white mb-1">Join Megusta Network</h2>
             <p className="text-xs text-slate-400 mb-6">Register your details once to receive private bidding handles and instant purchase updates.</p>
 
@@ -942,10 +982,6 @@ collections:
           </div>
         </div>
       )}
-
-    </div>
-  );
-}
 
 // Subcomponent: Product Card with 3-Photo Gallery & Quick Actions
 function ProductCard({ item, onBuy, onBid, onViewHistory }) {
