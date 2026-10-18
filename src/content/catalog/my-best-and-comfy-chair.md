@@ -1,6 +1,6 @@
 ---
 title: My best and comfy chair
-listingType: Auction & Buy Now
+listingType: Auction Item
 price: 100
 currentBid: 51
 auctionEndDate: 2026-10-21 18:18
