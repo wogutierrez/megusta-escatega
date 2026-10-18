@@ -128,36 +128,34 @@ export default function App({ initialItems = [] }) {
   const [selectedCategory, setSelectedCategory] = useState('All');
   const [searchQuery, setSearchQuery] = useState('');
   
-  // Modals state (Already in code)[cite: 2]
+  // Modals state
   const [activeBuyItem, setActiveBuyItem] = useState(null);
   const [activeBidItem, setActiveBidItem] = useState(null);
   const [activeHistoryItem, setActiveHistoryItem] = useState(null);
   const [showCMSGuide, setShowCMSGuide] = useState(false);
   const [showConsignmentModal, setShowConsignmentModal] = useState(false);
 
-  // Registration states (Already in code)[cite: 2]
+  // Registration states
   const [showRegisterModal, setShowRegisterModal] = useState(false);
   const [registeredUser, setRegisteredUser] = useState(null);
   const [regForm, setRegForm] = useState({ firstName: '', lastName: '', email: '', phone: '' });
   const [regLoading, setRegLoading] = useState(false);
   const [regMessage, setRegMessage] = useState('');
 
-  // ==========================================
-  // NEW: Sign-In States Added for Returning Users
-  // ==========================================
+  // Sign-In States Added for Returning Users
   const [showSignInModal, setShowSignInModal] = useState(false);
   const [signInEmail, setSignInEmail] = useState('');
   const [signInLoading, setSignInLoading] = useState(false);
   const [signInMessage, setSignInMessage] = useState('');
 
-  // Form states (Already in code)[cite: 2]
+  // Form states
   const [customBidAmount, setCustomBidAmount] = useState('');
   
-  // Toast Notification System (Already in code)[cite: 2]
+  // Toast Notification System
   const [toast, setToast] = useState(null);
   const [copiedYaml, setCopiedYaml] = useState(false);
 
-  // Check localStorage on load for saved user handle (Already in code)[cite: 2]
+  // Check localStorage on load for saved user handle
   useEffect(() => {
     const savedUser = localStorage.getItem('megusta_user');
     if (savedUser) {
@@ -197,9 +195,7 @@ export default function App({ initialItems = [] }) {
     }
   };
 
-  // ==========================================
-  // NEW: Handler Function to Submit Sign-In
-  // ==========================================
+  // Handler Function to Submit Sign-In
   const handleSignInSubmit = async (e) => {
     e.preventDefault();
     setSignInLoading(true);
@@ -238,7 +234,7 @@ export default function App({ initialItems = [] }) {
     setTimeout(() => setToast(null), 6000);
   };
 
-  // Handle Instant Buy (Already in code)[cite: 2]
+  // Handle Instant Buy
   const handleConfirmBuy = (e) => {
     e.preventDefault();
     if (!registeredUser) {
@@ -254,8 +250,8 @@ export default function App({ initialItems = [] }) {
     setActiveBuyItem(null);
   };
 
-  // Handle Bidding (Already in code)[cite: 2]
-  const handlePlaceBid = (e) => {
+  // Handle Bidding (Silent database update without email notifications)
+  const handlePlaceBid = async (e) => {
     e.preventDefault();
     if (!registeredUser || !activeBidItem) {
       setShowRegisterModal(true);
@@ -270,39 +266,66 @@ export default function App({ initialItems = [] }) {
       return;
     }
 
-    const assignedPseudonym = registeredUser.pseudonym;
+    try {
+      const res = await fetch('/api/bid', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          email: registeredUser.email,
+          itemId: activeBidItem.id,
+          itemTitle: activeBidItem.title,
+          bidAmount: bidValue
+        })
+      });
 
-    // Update state with new bid
-    setItems(prevItems => prevItems.map(item => {
-      if (item.id === activeBidItem.id) {
-        const newBidObj = {
-          id: `b-${Date.now()}`,
-          amount: bidValue,
-          bidder: assignedPseudonym,
-          timestamp: 'Just now'
-        };
-        return {
-          ...item,
-          currentBid: bidValue,
-          bids: [newBidObj, ...(item.bids || [])]
-        };
+      const data = await res.json();
+      if (!res.ok) {
+        alert(data.error || "Failed to place bid.");
+        return;
       }
-      return item;
-    }));
 
-    showNotification(
-      `Bid of $${bidValue} recorded under hidden handle [${assignedPseudonym}]. Email alerts sent to ${registeredUser.email} and info@escatega.com.`,
-      'Bid Placed Successfully'
-    );
+      const assignedPseudonym = data.pseudonym || registeredUser.pseudonym;
 
-    setActiveBidItem(null);
-    setCustomBidAmount('');
+      // Update state with new bid
+      setItems(prevItems => prevItems.map(item => {
+        if (item.id === activeBidItem.id) {
+          const newBidObj = {
+            id: `b-${Date.now()}`,
+            amount: bidValue,
+            bidder: assignedPseudonym,
+            timestamp: 'Just now'
+          };
+          return {
+            ...item,
+            currentBid: bidValue,
+            bids: [newBidObj, ...(item.bids || [])]
+          };
+        }
+        return item;
+      }));
+
+      showNotification(
+        `Bid of $${bidValue} recorded under hidden handle [${assignedPseudonym}].`,
+        'Bid Placed Successfully'
+      );
+
+      setActiveBidItem(null);
+      setCustomBidAmount('');
+    } catch (err) {
+      console.error("Bid error:", err);
+      alert("Network error while placing bid.");
+    }
   };
 
+  // Robust category filtering (case-insensitive and trimmed)
   const filteredItems = items.filter(item => {
-    const matchesCategory = selectedCategory === 'All' || item.category === selectedCategory;
+    const itemCat = (item.category || '').toLowerCase().trim();
+    const selectedCat = selectedCategory.toLowerCase().trim();
+
+    const matchesCategory = selectedCat === 'all' || itemCat === selectedCat;
     const matchesSearch = item.title.toLowerCase().includes(searchQuery.toLowerCase()) || 
                           (item.description && item.description.toLowerCase().includes(searchQuery.toLowerCase()));
+    
     return matchesCategory && matchesSearch;
   });
 
@@ -341,7 +364,7 @@ collections:
   return (
     <div className="min-h-screen bg-slate-900 text-slate-100 font-sans flex flex-col antialiased selection:bg-emerald-500 selection:text-white">
       
-      {/* Toast Notification Banner (Already in code)[cite: 2] */}
+      {/* Toast Notification Banner */}
       {toast && (
         <div className="fixed top-5 right-5 z-50 max-w-md bg-emerald-950 border border-emerald-500/50 text-emerald-100 p-4 rounded-xl shadow-2xl shadow-emerald-950/80 backdrop-blur-md flex items-start gap-3 animate-bounce-short">
           <CheckCircle2 className="w-6 h-6 text-emerald-400 shrink-0 mt-0.5" />
@@ -359,7 +382,7 @@ collections:
       <header className="sticky top-0 z-40 bg-slate-900/90 backdrop-blur-md border-b border-slate-800/80">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between gap-4">
           
-          {/* Brand Identity (Already in code)[cite: 2] */}
+          {/* Brand Identity */}
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-emerald-500 to-teal-400 flex items-center justify-center shadow-lg shadow-emerald-500/20">
               <ShoppingBag className="w-5 h-5 text-slate-950 font-bold" />
@@ -373,9 +396,7 @@ collections:
             </div>
           </div>
 
-          {/* ================================================= */}
-          {/* UPDATED: Action Header Links with Sign In Button  */}
-          {/* ================================================= */}
+          {/* Action Header Links with Sign In Button */}
           <div className="flex items-center gap-2 sm:gap-3">
             {registeredUser ? (
               <div className="flex items-center gap-2">
@@ -430,7 +451,7 @@ collections:
           </div>
         </div>
 
-        {/* Subheader Search and Category Pills (Already in code)[cite: 2] */}
+        {/* Subheader Search and Category Pills */}
         <div className="bg-slate-950/60 border-t border-slate-800/40 py-3">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col md:flex-row items-stretch md:items-center justify-between gap-3">
             
@@ -472,7 +493,7 @@ collections:
         </div>
       </header>
 
-      {/* Main Container (Already in code)[cite: 2] */}
+      {/* Main Container */}
       <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8">
         
         {/* Banner Explainer */}
@@ -535,7 +556,7 @@ collections:
         )}
       </main>
 
-      {/* Footer (Already in code)[cite: 2] */}
+      {/* Footer */}
       <footer className="mt-16 bg-slate-950 border-t border-slate-800/80 py-8 text-xs text-slate-400">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col md:flex-row items-center justify-between gap-4">
           <div className="flex items-center gap-2">
@@ -552,7 +573,7 @@ collections:
 
       {/* ================= MODALS & DRAWERS ================= */}
 
-      {/* 1. INSTANT BUY MODAL (Already in code)[cite: 2] */}
+      {/* 1. INSTANT BUY MODAL */}
       {activeBuyItem && (
         <div className="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4">
           <div className="bg-slate-900 border border-slate-800 rounded-2xl max-w-lg w-full p-6 shadow-2xl relative animate-in fade-in zoom-in-95 duration-200">
@@ -624,7 +645,7 @@ collections:
         </div>
       )}
 
-      {/* 2. PLACE BID MODAL (Already in code)[cite: 2] */}
+      {/* 2. PLACE BID MODAL */}
       {activeBidItem && (
         <div className="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4">
           <div className="bg-slate-900 border border-slate-800 rounded-2xl max-w-lg w-full p-6 shadow-2xl relative animate-in fade-in zoom-in-95 duration-200">
@@ -702,7 +723,7 @@ collections:
               <div className="p-3 bg-slate-950 rounded-xl border border-slate-800 flex items-start gap-2.5">
                 <Lock className="w-4 h-4 text-emerald-400 mt-0.5 shrink-0" />
                 <p className="text-[11px] text-slate-400 leading-normal">
-                  <strong>Privacy Shield Active:</strong> Your email is kept strictly private. Publicly, your bid will display under an automatically generated handle (e.g. <em>SilverFalcon42</em>). Notifications will go to <span className="font-mono text-slate-300">info@escatega.com</span> and your inbox.
+                  <strong>Privacy Shield Active:</strong> Your email is kept strictly private. Publicly, your bid will display under an automatically generated handle (e.g. <em>SilverFalcon42</em>). Bids update instantly in the system database.
                 </p>
               </div>
 
@@ -727,7 +748,7 @@ collections:
         </div>
       )}
 
-      {/* 3. BID HISTORY DRAWER (Already in code)[cite: 2] */}
+      {/* 3. BID HISTORY DRAWER */}
       {activeHistoryItem && (
         <div className="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm flex items-center justify-end p-0 sm:p-4">
           <div className="bg-slate-900 border-l sm:border border-slate-800 w-full sm:max-w-md h-full sm:h-auto sm:max-h-[90vh] sm:rounded-2xl p-6 shadow-2xl flex flex-col relative animate-in slide-in-from-right duration-200">
@@ -802,7 +823,7 @@ collections:
         </div>
       )}
 
-      {/* 4. CONSIGNMENT INFO MODAL (Already in code)[cite: 2] */}
+      {/* 4. CONSIGNMENT INFO MODAL */}
       {showConsignmentModal && (
         <div className="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4">
           <div className="bg-slate-900 border border-slate-800 rounded-2xl max-w-lg w-full p-6 shadow-2xl relative">
@@ -860,7 +881,7 @@ collections:
         </div>
       )}
 
-      {/* 5. CMS & CLOUDFLARE INTEGRATION GUIDE MODAL (Already in code)[cite: 2] */}
+      {/* 5. CMS & CLOUDFLARE INTEGRATION GUIDE MODAL */}
       {showCMSGuide && (
         <div className="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4">
           <div className="bg-slate-900 border border-slate-800 rounded-2xl max-w-2xl w-full p-6 shadow-2xl relative max-h-[90vh] flex flex-col">
@@ -930,7 +951,7 @@ collections:
         </div>
       )}
 
-      {/* 6. REGISTRATION MODAL (Cleaned up from previous tabs) */}
+      {/* 6. REGISTRATION MODAL */}
       {showRegisterModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4">
           <div className="bg-slate-900 border border-slate-800 rounded-2xl p-6 max-w-md w-full shadow-2xl relative">
@@ -1009,9 +1030,7 @@ collections:
         </div>
       )}
 
-      {/* ================================================= */}
-      {/* NEW: Dedicated Sign-In Modal for Returning Users  */}
-      {/* ================================================= */}
+      {/* 7. SIGN-IN MODAL FOR RETURNING USERS */}
       {showSignInModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4">
           <div className="bg-slate-900 border border-slate-800 rounded-2xl p-6 max-w-md w-full shadow-2xl relative">
@@ -1060,11 +1079,10 @@ collections:
   );
 }
 
-// Subcomponent: Product Card with 3-Photo Gallery & Quick Actions (Already in code)[cite: 2]
+// Subcomponent: Product Card with 3-Photo Gallery & Quick Actions
 function ProductCard({ item, onBuy, onBid, onViewHistory }) {
   const [currentImgIndex, setCurrentImgIndex] = useState(0);
 
-  // Normalize images array to safely handle both CMS items and mock items
   const imagesList = (item.images && item.images.length > 0) 
     ? item.images 
     : [item.image, item.image2, item.image3].filter(Boolean);
