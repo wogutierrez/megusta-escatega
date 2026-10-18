@@ -1,7 +1,9 @@
 ---
 title: Red Jersey
-price: 4
+listingType: Auction Item
+price: 10
 currentBid: 4
+auctionEndDate: 2026-10-20 18:29
 category: Clothing
 condition: As-Is (Very Good)
 image: /uploads/RedJersey.jpeg
