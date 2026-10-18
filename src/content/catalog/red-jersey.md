@@ -3,7 +3,7 @@ title: Red Jersey
 price: 4
 currentBid: 4
 category: Ropa
-condition: Excelente
+condition: As-Is (Very Good)
 image: /uploads/RedJersey.jpeg
 image2: ''
 image3: ''
