@@ -17,7 +17,7 @@ collections:
       - { label: "Listing Type", name: "listingType", widget: "select", options: ["Auction Item", "Buy Item"], default: "Auction Item" }
       - { label: "Fixed Price ($)", name: "price", widget: "number", value_type: "float" }
       - { label: "Minimum Bid ($)", name: "currentBid", widget: "number", value_type: "float", required: false }
-      - { label: "Auction End Date & Time", name: "auctionEndDate", widget: "datetime", date_format: "YYYY-MM-DD", time_format: "HH:mm", required: false, hint: "Required if listing type is Auction Item" }
+      - { label: "Auction End Date & Time", name: "auctionEndDate", widget: "datetime", date_format: "YYYY-MM-DD", time_format: "HH:mm", required: false }
       - { label: "Category", name: "category", widget: "select", options: ["Electronics", "Clothing", "Furniture", "Vehicles", "Real Estate", "Others"] }
       - { label: "Condition", name: "condition", widget: "select", options: ["As-Is (Like New)", "As-Is (Excellent)", "As-Is (Very Good)", "As-Is (Good)"] }
       - { label: "Main Image", name: "image", widget: "image" }
