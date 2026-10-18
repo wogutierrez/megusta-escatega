@@ -1,7 +1,9 @@
 ---
 title: My best and comfy chair
+listingType: Auction & Buy Now
 price: 100
 currentBid: 50
+auctionEndDate: 2026-10-21 18:18
 category: Furniture
 condition: As-Is (Excellent)
 image: https://www.bentleydesigns.com/images/products/large/4047_22833.jpg
