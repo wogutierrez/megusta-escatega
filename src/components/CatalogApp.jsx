@@ -34,14 +34,14 @@ const generatePseudonym = () => {
   return `${adj}${animal}${num}`;
 };
 
-// Initial Mock Inventory with Listing Types & Countdown Dates
+// Initial Mock Inventory with Auction Item & Buy Item support
 const futureDate = new Date(Date.now() + 3 * 24 * 60 * 60 * 1000).toISOString(); // 3 days from now
 
 const INITIAL_ITEMS = [
   {
     id: 'item-1',
     title: 'Vintage Leather Armchair & Ottoman',
-    listingType: 'Auction & Buy Now',
+    listingType: 'Auction Item',
     auctionEndDate: futureDate,
     category: 'Furniture',
     description: 'Genuine full-grain leather armchair in cognac brown. Minor patina near arms, structurally perfect. Kept in smoke-free home.',
@@ -63,7 +63,7 @@ const INITIAL_ITEMS = [
   {
     id: 'item-2',
     title: 'Sony Alpha A7 III Camera Body + FE 50mm Lens',
-    listingType: 'Buy Now Only',
+    listingType: 'Buy Item',
     auctionEndDate: null,
     category: 'Electronics',
     description: 'Shutter count ~12,400. Includes 2 original batteries, dual charger, and Sony FE 50mm f/1.8 lens. Sensor clean, pristine optics.',
@@ -301,7 +301,7 @@ collections:
     slug: "{{slug}}"
     fields:
       - { label: "Title", name: "title", widget: "string" }
-      - { label: "Listing Type", name: "listingType", widget: "select", options: ["Auction & Buy Now", "Buy Now Only"], default: "Auction & Buy Now" }
+      - { label: "Listing Type", name: "listingType", widget: "select", options: ["Auction Item", "Buy Item"], default: "Auction Item" }
       - { label: "Fixed Price ($)", name: "price", widget: "number", value_type: "float" }
       - { label: "Minimum Bid ($)", name: "currentBid", widget: "number", value_type: "float", required: false }
       - { label: "Auction End Date & Time", name: "auctionEndDate", widget: "datetime", date_format: "YYYY-MM-DD", time_format: "HH:mm", required: false }
@@ -1022,7 +1022,7 @@ collections:
   );
 }
 
-// Live Countdown Timer Component for Auctions
+// Live Countdown Timer Component for Auction Items
 function AuctionCountdown({ endDate }) {
   const [timeLeft, setTimeLeft] = useState({ days: 0, hours: 0, minutes: 0, seconds: 0, expired: false });
 
@@ -1068,7 +1068,7 @@ function AuctionCountdown({ endDate }) {
   );
 }
 
-// Product Card with Dynamic Auction & Buy-Now Support
+// Product Card with Dynamic Auction Item vs Buy Item Support
 function ProductCard({ item, onBuy, onBid, onViewHistory }) {
   const [currentImgIndex, setCurrentImgIndex] = useState(0);
 
@@ -1094,7 +1094,7 @@ function ProductCard({ item, onBuy, onBid, onViewHistory }) {
     }
   };
 
-  const isBuyNowOnly = item.listingType === 'Buy Item';
+  const isBuyItem = item.listingType === 'Buy Item';
 
   return (
     <div className="bg-slate-900/90 border border-slate-800 hover:border-slate-700/80 rounded-2xl overflow-hidden shadow-lg transition-all flex flex-col group">
@@ -1168,22 +1168,22 @@ function ProductCard({ item, onBuy, onBid, onViewHistory }) {
 
         <div className="mt-5 pt-4 border-t border-slate-800/80">
           
-          {/* Auction Countdown Timer */}
-          {!isBuyNowOnly && item.auctionEndDate && (
+          {/* Live Countdown Timer for Auction Items */}
+          {!isBuyItem && item.auctionEndDate && (
             <div className="mb-3">
               <AuctionCountdown endDate={item.auctionEndDate} />
             </div>
           )}
 
           {/* Pricing Box */}
-          {isBuyNowOnly ? (
+          {isBuyItem ? (
             <div className="mb-4 p-3 rounded-xl bg-slate-950/60 border border-slate-800/80 flex items-center justify-between">
               <div>
                 <span className="text-[10px] uppercase font-mono text-slate-500 block">Direct Purchase Price</span>
                 <span className="text-xl font-black text-emerald-400">${item.price || 0}</span>
               </div>
               <span className="px-2.5 py-1 text-[10px] uppercase font-mono bg-amber-500/10 text-amber-400 border border-amber-500/20 rounded-full">
-                Fixed Price Only
+                Buy Item Only
               </span>
             </div>
           ) : (
@@ -1208,8 +1208,8 @@ function ProductCard({ item, onBuy, onBid, onViewHistory }) {
             </div>
           )}
 
-          {/* Masked Bidder Badge for Auctions */}
-          {!isBuyNowOnly && item.bids && item.bids.length > 0 && (
+          {/* Masked Bidder Badge for Auction Items */}
+          {!isBuyItem && item.bids && item.bids.length > 0 && (
             <div className="flex items-center justify-between text-[11px] text-slate-400 mb-4 px-1">
               <span className="flex items-center gap-1">
                 <Lock className="w-3 h-3 text-emerald-400" /> High bidder:
@@ -1225,12 +1225,12 @@ function ProductCard({ item, onBuy, onBid, onViewHistory }) {
           )}
 
           {/* Action Buttons */}
-          {isBuyNowOnly ? (
+          {isBuyItem ? (
             <button
               onClick={onBuy}
               className="w-full py-2.5 bg-emerald-500 text-slate-950 hover:bg-emerald-400 font-extrabold text-xs rounded-xl transition-all flex items-center justify-center gap-1.5 shadow-md shadow-emerald-500/10"
             >
-              <ShoppingBag className="w-3.5 h-3.5" /> Buy Now Directly
+              <ShoppingBag className="w-3.5 h-3.5" /> Buy Item Directly
             </button>
           ) : (
             <div className="grid grid-cols-2 gap-2">
