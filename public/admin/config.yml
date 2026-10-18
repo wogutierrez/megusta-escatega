@@ -8,18 +8,18 @@ public_folder: "/uploads"
 
 collections:
   - name: "catalog"
-    label: "Artículos del Catálogo"
-    folder: "src/content/catalog"
-    create: true
-    slug: "{{slug}}"
-    fields:
-      - { label: "Título", name: "title", widget: "string" }
-      - { label: "Precio Fijo ($)", name: "price", widget: "number", value_type: "float" }
-      - { label: "Puja Mínima ($)", name: "currentBid", widget: "number", value_type: "float" }
-      - { label: "Categoría", name: "category", widget: "select", options: ["Electrónica", "Muebles", "Vehículos", "Ropa", "Hogar", "Otros"] }
-      - { label: "Condición", name: "condition", widget: "select", options: ["Como Nuevo", "Excelente", "Bueno", "Usado"] }
-      - { label: "Imagen Principal", name: "image", widget: "image" }
-      - { label: "Imagen 2", name: "image2", widget: "image", required: false }
-      - { label: "Imagen 3", name: "image3", widget: "image", required: false }
-      - { label: "Descripción", name: "description", widget: "text" }
-      - { label: "Etiqueta del Vendedor", name: "sellerTag", widget: "string", default: "Miembro Verificado" }
+  - label: "Catalog Items"
+  - folder: "src/content/catalog"
+  - create: true
+  - slug: "{{slug}}"
+  - fields:
+      - { label: "Title", name: "title", widget: "string" }
+      - { label: "Fixed Price ($)", name: "price", widget: "number", value_type: "float" }
+      - { label: "Minimum Bid ($)", name: "currentBid", widget: "number", value_type: "float" }
+      - { label: "Category", name: "category", widget: "select", options: ["Electronics", "Clothing", "Furniture", "Vehicles", "Real Estate", "Others"] }
+      - { label: "Condition", name: "condition", widget: "select", options: ["As-Is (Like New)", "As-Is (Excellent)", "As-Is (Very Good)", "As-Is (Good)"] }
+      - { label: "Main Image", name: "image", widget: "image" }
+      - { label: "Image 2", name: "image2", widget: "image", required: false }
+      - { label: "Image 3", name: "image3", widget: "image", required: false }
+      - { label: "Description", name: "description", widget: "text" }
+      - { label: "Seller Tag", name: "sellerTag", widget: "string", default: "Verified Acquaintance" }
