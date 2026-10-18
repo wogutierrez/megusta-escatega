@@ -34,8 +34,8 @@ const generatePseudonym = () => {
   return `${adj}${animal}${num}`;
 };
 
-// Initial Mock Inventory with Auction Item & Buy Item support
-const futureDate = new Date(Date.now() + 3 * 24 * 60 * 60 * 1000).toISOString(); // 3 days from now
+// Initial Mock Inventory
+const futureDate = new Date(Date.now() + 3 * 24 * 60 * 60 * 1000).toISOString();
 
 const INITIAL_ITEMS = [
   {
@@ -52,8 +52,7 @@ const INITIAL_ITEMS = [
     location: 'Central District',
     images: [
       'https://images.unsplash.com/photo-1586023492125-27b2c045efd7?auto=format&fit=crop&w=800&q=80',
-      'https://images.unsplash.com/photo-1567538096630-e0c55bd6374c?auto=format&fit=crop&w=800&q=80',
-      'https://images.unsplash.com/photo-1580481072645-022f9a6d83d0?auto=format&fit=crop&w=800&q=80'
+      'https://images.unsplash.com/photo-1567538096630-e0c55bd6374c?auto=format&fit=crop&w=800&q=80'
     ],
     bids: [
       { id: 'b1', amount: 210, bidder: 'SilverFalcon42', timestamp: '2 hours ago' },
@@ -73,8 +72,7 @@ const INITIAL_ITEMS = [
     condition: 'As-Is (Like New)',
     location: 'North Suburbs',
     images: [
-      'https://images.unsplash.com/photo-1516035069371-29a1b244cc32?auto=format&fit=crop&w=800&q=80',
-      'https://images.unsplash.com/photo-1526170375885-4d8ecf77b99f?auto=format&fit=crop&w=800&q=80'
+      'https://images.unsplash.com/photo-1516035069371-29a1b244cc32?auto=format&fit=crop&w=800&q=80'
     ],
     bids: []
   }
@@ -216,7 +214,7 @@ export default function App({ initialItems = [] }) {
       return;
     }
 
-    const minAllowed = activeBidItem.currentBid + activeBidItem.minBidIncrement;
+    const minAllowed = (activeBidItem.currentBid || 0) + (activeBidItem.minBidIncrement || 5);
     const bidValue = customBidAmount ? parseFloat(customBidAmount) : minAllowed;
 
     if (bidValue < minAllowed) {
@@ -618,7 +616,7 @@ collections:
               </div>
               <div className="p-3 rounded-xl bg-slate-800/60 border border-slate-700/60">
                 <span className="text-[11px] text-slate-400 block">Min Next Bid</span>
-                <span className="text-xl font-extrabold text-teal-400">${activeBidItem.currentBid + activeBidItem.minBidIncrement}</span>
+                <span className="text-xl font-extrabold text-teal-400">${(activeBidItem.currentBid || 0) + (activeBidItem.minBidIncrement || 5)}</span>
               </div>
             </div>
 
@@ -647,9 +645,9 @@ collections:
                   <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 font-bold">$</span>
                   <input 
                     type="number" 
-                    min={activeBidItem.currentBid + activeBidItem.minBidIncrement}
-                    step={activeBidItem.minBidIncrement}
-                    placeholder={`${activeBidItem.currentBid + activeBidItem.minBidIncrement}`}
+                    min={(activeBidItem.currentBid || 0) + (activeBidItem.minBidIncrement || 5)}
+                    step={activeBidItem.minBidIncrement || 5}
+                    placeholder={`${(activeBidItem.currentBid || 0) + (activeBidItem.minBidIncrement || 5)}`}
                     value={customBidAmount}
                     onChange={(e) => setCustomBidAmount(e.target.value)}
                     className="w-full bg-slate-950 border border-slate-700 rounded-lg pl-8 pr-3 py-2 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-teal-500 focus:ring-1 focus:ring-teal-500"
@@ -660,7 +658,7 @@ collections:
                     <button
                       type="button"
                       key={inc}
-                      onClick={() => setCustomBidAmount((activeBidItem.currentBid + inc).toString())}
+                      onClick={() => setCustomBidAmount(((activeBidItem.currentBid || 0) + inc).toString())}
                       className="px-2 py-1 text-[11px] font-mono bg-slate-800 text-slate-300 hover:bg-slate-700 hover:text-white rounded border border-slate-700"
                     >
                       +${inc}
@@ -1022,7 +1020,7 @@ collections:
   );
 }
 
-// Live Countdown Timer Component for Auction Items
+// Compact Live Countdown Timer Component for Auction Items
 function AuctionCountdown({ endDate }) {
   const [timeLeft, setTimeLeft] = useState({ days: 0, hours: 0, minutes: 0, seconds: 0, expired: false });
 
@@ -1052,23 +1050,21 @@ function AuctionCountdown({ endDate }) {
   if (!endDate) return null;
   if (timeLeft.expired) {
     return (
-      <div className="flex items-center gap-1.5 text-xs text-red-400 font-mono font-semibold bg-red-500/10 px-2.5 py-1 rounded-lg border border-red-500/20">
-        <Clock className="w-3.5 h-3.5" /> Auction Closed
-      </div>
+      <span className="text-[10px] text-red-400 font-mono font-semibold bg-red-500/10 px-2 py-0.5 rounded border border-red-500/20 flex items-center gap-1">
+        <Clock className="w-3 h-3" /> Closed
+      </span>
     );
   }
 
   return (
-    <div className="flex items-center gap-1.5 text-xs text-teal-300 font-mono bg-teal-500/10 px-2.5 py-1 rounded-lg border border-teal-500/20">
-      <Clock className="w-3.5 h-3.5 text-teal-400 animate-pulse" />
-      <span>
-        {timeLeft.days}d {timeLeft.hours}h {timeLeft.minutes}m {timeLeft.seconds}s left
-      </span>
-    </div>
+    <span className="text-[10px] text-teal-300 font-mono bg-teal-500/10 px-2 py-0.5 rounded border border-teal-500/20 flex items-center gap-1">
+      <Clock className="w-3 h-3 text-teal-400 animate-pulse" />
+      {timeLeft.days}d {timeLeft.hours}h {timeLeft.minutes}m {timeLeft.seconds}s
+    </span>
   );
 }
 
-// Product Card with Dynamic Auction Item vs Buy Item Support
+// Product Card with Clean Separation: Buy Items vs Auction Items
 function ProductCard({ item, onBuy, onBid, onViewHistory }) {
   const [currentImgIndex, setCurrentImgIndex] = useState(0);
 
@@ -1168,13 +1164,6 @@ function ProductCard({ item, onBuy, onBid, onViewHistory }) {
 
         <div className="mt-5 pt-4 border-t border-slate-800/80">
           
-          {/* Live Countdown Timer for Auction Items */}
-          {!isBuyItem && item.auctionEndDate && (
-            <div className="mb-3">
-              <AuctionCountdown endDate={item.auctionEndDate} />
-            </div>
-          )}
-
           {/* Pricing Box */}
           {isBuyItem ? (
             <div className="mb-4 p-3 rounded-xl bg-slate-950/60 border border-slate-800/80 flex items-center justify-between">
@@ -1183,19 +1172,19 @@ function ProductCard({ item, onBuy, onBid, onViewHistory }) {
                 <span className="text-xl font-black text-emerald-400">${item.price || 0}</span>
               </div>
               <span className="px-2.5 py-1 text-[10px] uppercase font-mono bg-amber-500/10 text-amber-400 border border-amber-500/20 rounded-full">
-                Buy Item Only
+                Buy Item
               </span>
             </div>
           ) : (
             <div className="grid grid-cols-2 gap-2 mb-4 p-3 rounded-xl bg-slate-950/60 border border-slate-800/80">
               <div>
-                <span className="text-[10px] uppercase font-mono text-slate-500 block">Buy Now Price</span>
-                <span className="text-lg font-black text-emerald-400">${item.price || 0}</span>
+                <span className="text-[10px] uppercase font-mono text-slate-500 block">Current Bid</span>
+                <span className="text-lg font-black text-white">${item.currentBid || 0}</span>
               </div>
               <div className="text-right">
                 <span className="text-[10px] uppercase font-mono text-slate-500 block">Highest Bidder</span>
                 <div className="flex items-center justify-end gap-1">
-                  <span className="text-lg font-bold text-white">${item.currentBid || 0}</span>
+                  <span className="text-sm font-mono font-bold text-teal-400">{item.bids && item.bids.length > 0 ? item.bids[0].bidder : 'No bids'}</span>
                   <button 
                     onClick={onViewHistory}
                     title="View Bidder History"
@@ -1208,44 +1197,29 @@ function ProductCard({ item, onBuy, onBid, onViewHistory }) {
             </div>
           )}
 
-          {/* Masked Bidder Badge for Auction Items */}
-          {!isBuyItem && item.bids && item.bids.length > 0 && (
-            <div className="flex items-center justify-between text-[11px] text-slate-400 mb-4 px-1">
-              <span className="flex items-center gap-1">
-                <Lock className="w-3 h-3 text-emerald-400" /> High bidder:
-                <span className="font-mono font-semibold text-slate-300">{item.bids[0].bidder}</span>
-              </span>
-              <button 
-                onClick={onViewHistory} 
-                className="text-emerald-400 hover:underline text-[10px]"
-              >
-                {item.bids.length} bid{item.bids.length > 1 ? 's' : ''} history
-              </button>
-            </div>
-          )}
-
-          {/* Action Buttons */}
+          {/* Action Buttons with Compact Live Clock next to Place Bid */}
           {isBuyItem ? (
             <button
               onClick={onBuy}
               className="w-full py-2.5 bg-emerald-500 text-slate-950 hover:bg-emerald-400 font-extrabold text-xs rounded-xl transition-all flex items-center justify-center gap-1.5 shadow-md shadow-emerald-500/10"
             >
-              <ShoppingBag className="w-3.5 h-3.5" /> Buy Item Directly
+              <ShoppingBag className="w-3.5 h-3.5" /> Buy Item Directly (${item.price || 0})
             </button>
           ) : (
-            <div className="grid grid-cols-2 gap-2">
-              <button
-                onClick={onBuy}
-                className="px-3 py-2.5 bg-emerald-500 text-slate-950 hover:bg-emerald-400 font-extrabold text-xs rounded-xl transition-all flex items-center justify-center gap-1.5 shadow-md shadow-emerald-500/10"
-              >
-                <ShoppingBag className="w-3.5 h-3.5" /> Buy Now
-              </button>
+            <div className="flex items-center gap-2">
               <button
                 onClick={onBid}
-                className="px-3 py-2.5 bg-slate-800 text-slate-200 hover:bg-slate-700 font-bold text-xs rounded-xl border border-slate-700/80 transition-all flex items-center justify-center gap-1.5"
+                className="flex-1 py-2.5 bg-teal-500 text-slate-950 hover:bg-teal-400 font-extrabold text-xs rounded-xl transition-all flex items-center justify-center gap-1.5 shadow-md shadow-teal-500/20"
               >
-                <TrendingUp className="w-3.5 h-3.5 text-teal-400" /> Place Bid
+                <TrendingUp className="w-3.5 h-3.5" /> Place Bid
               </button>
+
+              {/* Compact live countdown clock next to Place Bid button */}
+              {item.auctionEndDate && (
+                <div className="shrink-0">
+                  <AuctionCountdown endDate={item.auctionEndDate} />
+                </div>
+              )}
             </div>
           )}
 
