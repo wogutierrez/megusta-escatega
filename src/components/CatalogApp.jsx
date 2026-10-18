@@ -1090,7 +1090,7 @@ function ProductCard({ item, onBuy, onBid, onViewHistory }) {
     }
   };
 
-  // Robust check for listing type (case-insensitive and trimmed)
+  // Robust check for listing type (defaults to Buy Item if not explicitly an Auction Item)
   const listingTypeLower = (item.listingType || '').toLowerCase().trim();
   const isAuction = listingTypeLower.includes('auction') || listingTypeLower.includes('puja');
 
@@ -1199,7 +1199,7 @@ function ProductCard({ item, onBuy, onBid, onViewHistory }) {
             </div>
           )}
 
-          {/* Action Buttons: Buy Item shows Buy Now, Auction Item shows Place Bid + Live Clock */}
+          {/* Action Buttons: Buy Item shows Buy Now Directly, Auction Item shows Place Bid + Live Clock */}
           {!isAuction ? (
             <button
               onClick={onBuy}
