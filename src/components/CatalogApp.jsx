@@ -1094,7 +1094,7 @@ function ProductCard({ item, onBuy, onBid, onViewHistory }) {
     }
   };
 
-  const isBuyNowOnly = item.listingType === 'Buy Now Only';
+  const isBuyNowOnly = item.listingType === 'Buy Item';
 
   return (
     <div className="bg-slate-900/90 border border-slate-800 hover:border-slate-700/80 rounded-2xl overflow-hidden shadow-lg transition-all flex flex-col group">
