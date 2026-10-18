@@ -1064,7 +1064,7 @@ function AuctionCountdown({ endDate }) {
   );
 }
 
-// Product Card with Clean Separation: Buy Items vs Auction Items
+// Product Card with Robust Listing Type Detection
 function ProductCard({ item, onBuy, onBid, onViewHistory }) {
   const [currentImgIndex, setCurrentImgIndex] = useState(0);
 
@@ -1090,7 +1090,9 @@ function ProductCard({ item, onBuy, onBid, onViewHistory }) {
     }
   };
 
-  const isBuyItem = item.listingType === 'Buy Item';
+  // Robust check for listing type (case-insensitive and trimmed)
+  const listingTypeLower = (item.listingType || '').toLowerCase().trim();
+  const isAuction = listingTypeLower.includes('auction') || listingTypeLower.includes('puja');
 
   return (
     <div className="bg-slate-900/90 border border-slate-800 hover:border-slate-700/80 rounded-2xl overflow-hidden shadow-lg transition-all flex flex-col group">
@@ -1164,14 +1166,14 @@ function ProductCard({ item, onBuy, onBid, onViewHistory }) {
 
         <div className="mt-5 pt-4 border-t border-slate-800/80">
           
-          {/* Pricing Box */}
-          {isBuyItem ? (
+          {/* Pricing Box based on listing type */}
+          {!isAuction ? (
             <div className="mb-4 p-3 rounded-xl bg-slate-950/60 border border-slate-800/80 flex items-center justify-between">
               <div>
                 <span className="text-[10px] uppercase font-mono text-slate-500 block">Direct Purchase Price</span>
                 <span className="text-xl font-black text-emerald-400">${item.price || 0}</span>
               </div>
-              <span className="px-2.5 py-1 text-[10px] uppercase font-mono bg-amber-500/10 text-amber-400 border border-amber-500/20 rounded-full">
+              <span className="px-2.5 py-1 text-[10px] uppercase font-mono bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 rounded-full">
                 Buy Item
               </span>
             </div>
@@ -1197,13 +1199,13 @@ function ProductCard({ item, onBuy, onBid, onViewHistory }) {
             </div>
           )}
 
-          {/* Action Buttons with Compact Live Clock next to Place Bid */}
-          {isBuyItem ? (
+          {/* Action Buttons: Buy Item shows Buy Now, Auction Item shows Place Bid + Live Clock */}
+          {!isAuction ? (
             <button
               onClick={onBuy}
               className="w-full py-2.5 bg-emerald-500 text-slate-950 hover:bg-emerald-400 font-extrabold text-xs rounded-xl transition-all flex items-center justify-center gap-1.5 shadow-md shadow-emerald-500/10"
             >
-              <ShoppingBag className="w-3.5 h-3.5" /> Buy Item Directly (${item.price || 0})
+              <ShoppingBag className="w-3.5 h-3.5" /> Buy Now Directly (${item.price || 0})
             </button>
           ) : (
             <div className="flex items-center gap-2">
