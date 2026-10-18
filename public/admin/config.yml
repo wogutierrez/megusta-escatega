@@ -8,11 +8,11 @@ public_folder: "/uploads"
 
 collections:
   - name: "catalog"
-  - label: "Catalog Items"
-  - folder: "src/content/catalog"
-  - create: true
-  - slug: "{{slug}}"
-  - fields:
+    label: "Catalog Items"
+    folder: "src/content/catalog"
+    create: true
+    slug: "{{slug}}"
+    fields:
       - { label: "Title", name: "title", widget: "string" }
       - { label: "Fixed Price ($)", name: "price", widget: "number", value_type: "float" }
       - { label: "Minimum Bid ($)", name: "currentBid", widget: "number", value_type: "float" }
