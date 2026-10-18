@@ -34,11 +34,15 @@ const generatePseudonym = () => {
   return `${adj}${animal}${num}`;
 };
 
-// Initial Mock Inventory
+// Initial Mock Inventory with Listing Types & Countdown Dates
+const futureDate = new Date(Date.now() + 3 * 24 * 60 * 60 * 1000).toISOString(); // 3 days from now
+
 const INITIAL_ITEMS = [
   {
     id: 'item-1',
     title: 'Vintage Leather Armchair & Ottoman',
+    listingType: 'Auction & Buy Now',
+    auctionEndDate: futureDate,
     category: 'Furniture',
     description: 'Genuine full-grain leather armchair in cognac brown. Minor patina near arms, structurally perfect. Kept in smoke-free home.',
     price: 320,
@@ -53,75 +57,32 @@ const INITIAL_ITEMS = [
     ],
     bids: [
       { id: 'b1', amount: 210, bidder: 'SilverFalcon42', timestamp: '2 hours ago' },
-      { id: 'b2', amount: 195, bidder: 'RusticOwl19', timestamp: '5 hours ago' },
-      { id: 'b3', amount: 180, bidder: 'GoldenFox77', timestamp: '1 day ago' }
+      { id: 'b2', amount: 195, bidder: 'RusticOwl19', timestamp: '5 hours ago' }
     ]
   },
   {
     id: 'item-2',
     title: 'Sony Alpha A7 III Camera Body + FE 50mm Lens',
+    listingType: 'Buy Now Only',
+    auctionEndDate: null,
     category: 'Electronics',
     description: 'Shutter count ~12,400. Includes 2 original batteries, dual charger, and Sony FE 50mm f/1.8 lens. Sensor clean, pristine optics.',
     price: 1150,
-    currentBid: 920,
-    minBidIncrement: 20,
+    currentBid: 0,
+    minBidIncrement: 0,
     condition: 'As-Is (Like New)',
     location: 'North Suburbs',
     images: [
       'https://images.unsplash.com/photo-1516035069371-29a1b244cc32?auto=format&fit=crop&w=800&q=80',
-      'https://images.unsplash.com/photo-1526170375885-4d8ecf77b99f?auto=format&fit=crop&w=800&q=80',
-      'https://images.unsplash.com/photo-1502920917128-1aa500764cbd?auto=format&fit=crop&w=800&q=80'
+      'https://images.unsplash.com/photo-1526170375885-4d8ecf77b99f?auto=format&fit=crop&w=800&q=80'
     ],
-    bids: [
-      { id: 'b10', amount: 920, bidder: 'CosmicLynx55', timestamp: '30 mins ago' },
-      { id: 'b11', amount: 880, bidder: 'SilentPanda88', timestamp: '3 hours ago' }
-    ]
-  },
-  {
-    id: 'item-3',
-    title: 'Trek Domane SL 6 Road Bike (54cm)',
-    category: 'Vehicles',
-    description: 'Carbon frame, Shimano Ultegra drivetrain, hydraulic disc brakes. Serviced last month with new tires and handlebar tape.',
-    price: 1850,
-    currentBid: 1400,
-    minBidIncrement: 50,
-    condition: 'As-Is (Very Good)',
-    location: 'West Side',
-    images: [
-      'https://images.unsplash.com/photo-1485965120184-e220f721d03e?auto=format&fit=crop&w=800&q=80',
-      'https://images.unsplash.com/photo-1532298229144-0ec0c57515c7?auto=format&fit=crop&w=800&q=80',
-      'https://images.unsplash.com/photo-1507035895480-2b3156c31fc8?auto=format&fit=crop&w=800&q=80'
-    ],
-    bids: [
-      { id: 'b20', amount: 1400, bidder: 'NobleBadger31', timestamp: '1 hour ago' },
-      { id: 'b21', amount: 1300, bidder: 'VelvetOtter14', timestamp: '12 hours ago' }
-    ]
-  },
-  {
-    id: 'item-4',
-    title: 'Handcrafted Solid Walnut Dining Table (Seats 6)',
-    category: 'Furniture',
-    description: 'Custom woodworking piece with natural oil finish and sturdy steel hairpin legs. Includes 4 matching minimalist chairs.',
-    price: 780,
-    currentBid: 520,
-    minBidIncrement: 20,
-    condition: 'As-Is (Excellent)',
-    location: 'Central District',
-    images: [
-      'https://images.unsplash.com/photo-1615066390971-03e4e1c36ddf?auto=format&fit=crop&w=800&q=80',
-      'https://images.unsplash.com/photo-1530018607912-eff2daa1bac4?auto=format&fit=crop&w=800&q=80',
-      'https://images.unsplash.com/photo-1577140917170-285929fb55b7?auto=format&fit=crop&w=800&q=80'
-    ],
-    bids: [
-      { id: 'b30', amount: 520, bidder: 'NimbleEagle99', timestamp: '4 hours ago' }
-    ]
+    bids: []
   }
 ];
 
 const CATEGORIES = ['All', 'Electronics', 'Clothing', 'Furniture', 'Vehicles', 'Real Estate', 'Others'];
 
 export default function App({ initialItems = [] }) {
-  // If initialItems are passed from Astro/CMS, use them; otherwise fallback to mock inventory
   const [items, setItems] = useState(
     initialItems.length > 0 ? initialItems : INITIAL_ITEMS
   );
@@ -142,7 +103,7 @@ export default function App({ initialItems = [] }) {
   const [regLoading, setRegLoading] = useState(false);
   const [regMessage, setRegMessage] = useState('');
 
-  // Sign-In States Added for Returning Users
+  // Sign-In States
   const [showSignInModal, setShowSignInModal] = useState(false);
   const [signInEmail, setSignInEmail] = useState('');
   const [signInLoading, setSignInLoading] = useState(false);
@@ -195,7 +156,6 @@ export default function App({ initialItems = [] }) {
     }
   };
 
-  // Handler Function to Submit Sign-In
   const handleSignInSubmit = async (e) => {
     e.preventDefault();
     setSignInLoading(true);
@@ -234,7 +194,6 @@ export default function App({ initialItems = [] }) {
     setTimeout(() => setToast(null), 6000);
   };
 
-  // Handle Instant Buy
   const handleConfirmBuy = (e) => {
     e.preventDefault();
     if (!registeredUser) {
@@ -250,7 +209,6 @@ export default function App({ initialItems = [] }) {
     setActiveBuyItem(null);
   };
 
-  // Handle Bidding (Silent database update without email notifications)
   const handlePlaceBid = async (e) => {
     e.preventDefault();
     if (!registeredUser || !activeBidItem) {
@@ -286,7 +244,6 @@ export default function App({ initialItems = [] }) {
 
       const assignedPseudonym = data.pseudonym || registeredUser.pseudonym;
 
-      // Update state with new bid
       setItems(prevItems => prevItems.map(item => {
         if (item.id === activeBidItem.id) {
           const newBidObj = {
@@ -317,7 +274,6 @@ export default function App({ initialItems = [] }) {
     }
   };
 
-  // Robust category filtering (case-insensitive and trimmed)
   const filteredItems = items.filter(item => {
     const itemCat = (item.category || '').toLowerCase().trim();
     const selectedCat = selectedCategory.toLowerCase().trim();
@@ -339,21 +295,23 @@ public_folder: "/uploads"
 
 collections:
   - name: "catalog"
-    label: "Artículos del Catálogo"
+    label: "Catalog Items"
     folder: "src/content/catalog"
     create: true
     slug: "{{slug}}"
     fields:
-      - { label: "Título", name: "title", widget: "string" }
-      - { label: "Precio Fijo ($)", name: "price", widget: "number", value_type: "float" }
-      - { label: "Puja Mínima ($)", name: "currentBid", widget: "number", value_type: "float" }
-      - { label: "Categoría", name: "category", widget: "select", options: ["Electrónica", "Muebles", "Vehículos", "Ropa", "Hogar", "Otros"] }
-      - { label: "Condición", name: "condition", widget: "select", options: ["Como Nuevo", "Excelente", "Bueno", "Usado"] }
-      - { label: "Imagen Principal", name: "image", widget: "image" }
-      - { label: "Imagen 2", name: "image2", widget: "image", required: false }
-      - { label: "Imagen 3", name: "image3", widget: "image", required: false }
-      - { label: "Descripción", name: "description", widget: "text" }
-      - { label: "Etiqueta del Vendedor", name: "sellerTag", widget: "string", default: "Miembro Verificado" }`;
+      - { label: "Title", name: "title", widget: "string" }
+      - { label: "Listing Type", name: "listingType", widget: "select", options: ["Auction & Buy Now", "Buy Now Only"], default: "Auction & Buy Now" }
+      - { label: "Fixed Price ($)", name: "price", widget: "number", value_type: "float" }
+      - { label: "Minimum Bid ($)", name: "currentBid", widget: "number", value_type: "float", required: false }
+      - { label: "Auction End Date & Time", name: "auctionEndDate", widget: "datetime", date_format: "YYYY-MM-DD", time_format: "HH:mm", required: false }
+      - { label: "Category", name: "category", widget: "select", options: ["Electronics", "Clothing", "Furniture", "Vehicles", "Real Estate", "Others"] }
+      - { label: "Condition", name: "condition", widget: "select", options: ["As-Is (Like New)", "As-Is (Excellent)", "As-Is (Very Good)", "As-Is (Good)"] }
+      - { label: "Main Image", name: "image", widget: "image" }
+      - { label: "Image 2", name: "image2", widget: "image", required: false }
+      - { label: "Image 3", name: "image3", widget: "image", required: false }
+      - { label: "Description", name: "description", widget: "text" }
+      - { label: "Seller Tag", name: "sellerTag", widget: "string", default: "Verified Acquaintance" }`;
 
   const copyYamlToClipboard = () => {
     navigator.clipboard.writeText(sampleCMSYaml);
@@ -382,7 +340,6 @@ collections:
       <header className="sticky top-0 z-40 bg-slate-900/90 backdrop-blur-md border-b border-slate-800/80">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between gap-4">
           
-          {/* Brand Identity */}
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-emerald-500 to-teal-400 flex items-center justify-center shadow-lg shadow-emerald-500/20">
               <ShoppingBag className="w-5 h-5 text-slate-950 font-bold" />
@@ -396,7 +353,6 @@ collections:
             </div>
           </div>
 
-          {/* Action Header Links with Sign In Button */}
           <div className="flex items-center gap-2 sm:gap-3">
             {registeredUser ? (
               <div className="flex items-center gap-2">
@@ -455,7 +411,6 @@ collections:
         <div className="bg-slate-950/60 border-t border-slate-800/40 py-3">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col md:flex-row items-stretch md:items-center justify-between gap-3">
             
-            {/* Search input */}
             <div className="relative flex-1 max-w-md">
               <Search className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
               <input 
@@ -472,7 +427,6 @@ collections:
               )}
             </div>
 
-            {/* Category Pills */}
             <div className="flex items-center gap-1.5 overflow-x-auto pb-1 md:pb-0 no-scrollbar">
               {CATEGORIES.map(cat => (
                 <button
@@ -496,7 +450,6 @@ collections:
       {/* Main Container */}
       <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8">
         
-        {/* Banner Explainer */}
         <div className="mb-8 p-6 rounded-2xl bg-gradient-to-r from-slate-800/90 via-slate-900 to-slate-900 border border-slate-800 relative overflow-hidden shadow-xl">
           <div className="absolute -right-10 -bottom-10 w-60 h-60 bg-emerald-500/10 rounded-full blur-3xl pointer-events-none" />
           <div className="relative z-10 max-w-3xl">
@@ -512,7 +465,6 @@ collections:
           </div>
         </div>
 
-        {/* Item Grid Header */}
         <div className="flex items-center justify-between mb-6">
           <h2 className="text-lg font-bold text-white flex items-center gap-2">
             <span>Available Listings</span>
@@ -528,7 +480,6 @@ collections:
           )}
         </div>
 
-        {/* Grid Display */}
         {filteredItems.length === 0 ? (
           <div className="text-center py-16 bg-slate-800/30 rounded-2xl border border-slate-800">
             <Filter className="w-12 h-12 text-slate-600 mx-auto mb-3" />
@@ -573,7 +524,6 @@ collections:
 
       {/* ================= MODALS & DRAWERS ================= */}
 
-      {/* 1. INSTANT BUY MODAL */}
       {activeBuyItem && (
         <div className="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4">
           <div className="bg-slate-900 border border-slate-800 rounded-2xl max-w-lg w-full p-6 shadow-2xl relative animate-in fade-in zoom-in-95 duration-200">
@@ -645,7 +595,6 @@ collections:
         </div>
       )}
 
-      {/* 2. PLACE BID MODAL */}
       {activeBidItem && (
         <div className="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4">
           <div className="bg-slate-900 border border-slate-800 rounded-2xl max-w-lg w-full p-6 shadow-2xl relative animate-in fade-in zoom-in-95 duration-200">
@@ -748,7 +697,6 @@ collections:
         </div>
       )}
 
-      {/* 3. BID HISTORY DRAWER */}
       {activeHistoryItem && (
         <div className="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm flex items-center justify-end p-0 sm:p-4">
           <div className="bg-slate-900 border-l sm:border border-slate-800 w-full sm:max-w-md h-full sm:h-auto sm:max-h-[90vh] sm:rounded-2xl p-6 shadow-2xl flex flex-col relative animate-in slide-in-from-right duration-200">
@@ -771,7 +719,6 @@ collections:
               <span className="font-mono font-bold text-emerald-400">{activeHistoryItem.bids ? activeHistoryItem.bids.length : 0}</span>
             </div>
 
-            {/* Bids Log */}
             <div className="flex-1 overflow-y-auto space-y-2 pr-1 my-2">
               {(!activeHistoryItem.bids || activeHistoryItem.bids.length === 0) ? (
                 <div className="text-center py-8 text-slate-500 text-xs">
@@ -823,7 +770,6 @@ collections:
         </div>
       )}
 
-      {/* 4. CONSIGNMENT INFO MODAL */}
       {showConsignmentModal && (
         <div className="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4">
           <div className="bg-slate-900 border border-slate-800 rounded-2xl max-w-lg w-full p-6 shadow-2xl relative">
@@ -881,7 +827,6 @@ collections:
         </div>
       )}
 
-      {/* 5. CMS & CLOUDFLARE INTEGRATION GUIDE MODAL */}
       {showCMSGuide && (
         <div className="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4">
           <div className="bg-slate-900 border border-slate-800 rounded-2xl max-w-2xl w-full p-6 shadow-2xl relative max-h-[90vh] flex flex-col">
@@ -951,7 +896,6 @@ collections:
         </div>
       )}
 
-      {/* 6. REGISTRATION MODAL */}
       {showRegisterModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4">
           <div className="bg-slate-900 border border-slate-800 rounded-2xl p-6 max-w-md w-full shadow-2xl relative">
@@ -1030,7 +974,6 @@ collections:
         </div>
       )}
 
-      {/* 7. SIGN-IN MODAL FOR RETURNING USERS */}
       {showSignInModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4">
           <div className="bg-slate-900 border border-slate-800 rounded-2xl p-6 max-w-md w-full shadow-2xl relative">
@@ -1079,7 +1022,53 @@ collections:
   );
 }
 
-// Subcomponent: Product Card with 3-Photo Gallery & Quick Actions
+// Live Countdown Timer Component for Auctions
+function AuctionCountdown({ endDate }) {
+  const [timeLeft, setTimeLeft] = useState({ days: 0, hours: 0, minutes: 0, seconds: 0, expired: false });
+
+  useEffect(() => {
+    if (!endDate) return;
+
+    const calculateTime = () => {
+      const difference = new Date(endDate) - new Date();
+      if (difference <= 0) {
+        setTimeLeft({ days: 0, hours: 0, minutes: 0, seconds: 0, expired: true });
+        return;
+      }
+
+      const days = Math.floor(difference / (1000 * 60 * 60 * 24));
+      const hours = Math.floor((difference / (1000 * 60 * 60)) % 24);
+      const minutes = Math.floor((difference / 1000 / 60) % 60);
+      const seconds = Math.floor((difference / 1000) % 60);
+
+      setTimeLeft({ days, hours, minutes, seconds, expired: false });
+    };
+
+    calculateTime();
+    const interval = setInterval(calculateTime, 1000);
+    return () => clearInterval(interval);
+  }, [endDate]);
+
+  if (!endDate) return null;
+  if (timeLeft.expired) {
+    return (
+      <div className="flex items-center gap-1.5 text-xs text-red-400 font-mono font-semibold bg-red-500/10 px-2.5 py-1 rounded-lg border border-red-500/20">
+        <Clock className="w-3.5 h-3.5" /> Auction Closed
+      </div>
+    );
+  }
+
+  return (
+    <div className="flex items-center gap-1.5 text-xs text-teal-300 font-mono bg-teal-500/10 px-2.5 py-1 rounded-lg border border-teal-500/20">
+      <Clock className="w-3.5 h-3.5 text-teal-400 animate-pulse" />
+      <span>
+        {timeLeft.days}d {timeLeft.hours}h {timeLeft.minutes}m {timeLeft.seconds}s left
+      </span>
+    </div>
+  );
+}
+
+// Product Card with Dynamic Auction & Buy-Now Support
 function ProductCard({ item, onBuy, onBid, onViewHistory }) {
   const [currentImgIndex, setCurrentImgIndex] = useState(0);
 
@@ -1105,10 +1094,12 @@ function ProductCard({ item, onBuy, onBid, onViewHistory }) {
     }
   };
 
+  const isBuyNowOnly = item.listingType === 'Buy Now Only';
+
   return (
     <div className="bg-slate-900/90 border border-slate-800 hover:border-slate-700/80 rounded-2xl overflow-hidden shadow-lg transition-all flex flex-col group">
       
-      {/* 3-Photo Carousel Header */}
+      {/* Photo Carousel Header */}
       <div className="relative aspect-[4/3] bg-slate-950 overflow-hidden">
         <img 
             src={activeImage} 
@@ -1116,7 +1107,6 @@ function ProductCard({ item, onBuy, onBid, onViewHistory }) {
             className="w-full h-full object-contain group-hover:scale-105 transition-transform duration-500"
         />
 
-        {/* Category & Condition Overlay */}
         <div className="absolute top-3 left-3 flex flex-wrap gap-1.5 z-10">
           <span className="px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider bg-slate-950/80 backdrop-blur-md text-emerald-400 border border-emerald-500/30 rounded-full">
             {item.category || 'General'}
@@ -1126,7 +1116,6 @@ function ProductCard({ item, onBuy, onBid, onViewHistory }) {
           </span>
         </div>
 
-        {/* Verification badge overlay */}
         <div className="absolute top-3 right-3 z-10">
           <span className="px-2.5 py-1 text-[10px] font-medium bg-slate-950/80 backdrop-blur-md text-slate-200 border border-slate-800 rounded-full flex items-center gap-1 shadow-md">
             <ShieldCheck className="w-3.5 h-3.5 text-emerald-400" />
@@ -1134,7 +1123,6 @@ function ProductCard({ item, onBuy, onBid, onViewHistory }) {
           </span>
         </div>
 
-        {/* Carousel controls */}
         {imagesList.length > 1 && (
           <>
             <button 
@@ -1150,7 +1138,6 @@ function ProductCard({ item, onBuy, onBid, onViewHistory }) {
               <ChevronRight className="w-4 h-4" />
             </button>
             
-            {/* Dots indicator */}
             <div className="absolute bottom-3 left-1/2 -translate-x-1/2 flex items-center gap-1.5 z-10">
               {imagesList.map((_, idx) => (
                 <button
@@ -1181,29 +1168,48 @@ function ProductCard({ item, onBuy, onBid, onViewHistory }) {
 
         <div className="mt-5 pt-4 border-t border-slate-800/80">
           
-          {/* Price & Bid Overview Box */}
-          <div className="grid grid-cols-2 gap-2 mb-4 p-3 rounded-xl bg-slate-950/60 border border-slate-800/80">
-            <div>
-              <span className="text-[10px] uppercase font-mono text-slate-500 block">Buy Now Price</span>
-              <span className="text-lg font-black text-emerald-400">${item.price || 0}</span>
+          {/* Auction Countdown Timer */}
+          {!isBuyNowOnly && item.auctionEndDate && (
+            <div className="mb-3">
+              <AuctionCountdown endDate={item.auctionEndDate} />
             </div>
-            <div className="text-right">
-              <span className="text-[10px] uppercase font-mono text-slate-500 block">Highest Bidder</span>
-              <div className="flex items-center justify-end gap-1">
-                <span className="text-lg font-bold text-white">${item.currentBid || 0}</span>
-                <button 
-                  onClick={onViewHistory}
-                  title="View Bidder History"
-                  className="text-slate-400 hover:text-emerald-400 ml-1"
-                >
-                  <Eye className="w-3.5 h-3.5" />
-                </button>
+          )}
+
+          {/* Pricing Box */}
+          {isBuyNowOnly ? (
+            <div className="mb-4 p-3 rounded-xl bg-slate-950/60 border border-slate-800/80 flex items-center justify-between">
+              <div>
+                <span className="text-[10px] uppercase font-mono text-slate-500 block">Direct Purchase Price</span>
+                <span className="text-xl font-black text-emerald-400">${item.price || 0}</span>
+              </div>
+              <span className="px-2.5 py-1 text-[10px] uppercase font-mono bg-amber-500/10 text-amber-400 border border-amber-500/20 rounded-full">
+                Fixed Price Only
+              </span>
+            </div>
+          ) : (
+            <div className="grid grid-cols-2 gap-2 mb-4 p-3 rounded-xl bg-slate-950/60 border border-slate-800/80">
+              <div>
+                <span className="text-[10px] uppercase font-mono text-slate-500 block">Buy Now Price</span>
+                <span className="text-lg font-black text-emerald-400">${item.price || 0}</span>
+              </div>
+              <div className="text-right">
+                <span className="text-[10px] uppercase font-mono text-slate-500 block">Highest Bidder</span>
+                <div className="flex items-center justify-end gap-1">
+                  <span className="text-lg font-bold text-white">${item.currentBid || 0}</span>
+                  <button 
+                    onClick={onViewHistory}
+                    title="View Bidder History"
+                    className="text-slate-400 hover:text-emerald-400 ml-1"
+                  >
+                    <Eye className="w-3.5 h-3.5" />
+                  </button>
+                </div>
               </div>
             </div>
-          </div>
+          )}
 
-          {/* Masked bidder badge */}
-          {item.bids && item.bids.length > 0 && (
+          {/* Masked Bidder Badge for Auctions */}
+          {!isBuyNowOnly && item.bids && item.bids.length > 0 && (
             <div className="flex items-center justify-between text-[11px] text-slate-400 mb-4 px-1">
               <span className="flex items-center gap-1">
                 <Lock className="w-3 h-3 text-emerald-400" /> High bidder:
@@ -1219,20 +1225,29 @@ function ProductCard({ item, onBuy, onBid, onViewHistory }) {
           )}
 
           {/* Action Buttons */}
-          <div className="grid grid-cols-2 gap-2">
+          {isBuyNowOnly ? (
             <button
               onClick={onBuy}
-              className="px-3 py-2.5 bg-emerald-500 text-slate-950 hover:bg-emerald-400 font-extrabold text-xs rounded-xl transition-all flex items-center justify-center gap-1.5 shadow-md shadow-emerald-500/10"
+              className="w-full py-2.5 bg-emerald-500 text-slate-950 hover:bg-emerald-400 font-extrabold text-xs rounded-xl transition-all flex items-center justify-center gap-1.5 shadow-md shadow-emerald-500/10"
             >
-              <ShoppingBag className="w-3.5 h-3.5" /> Buy Now
+              <ShoppingBag className="w-3.5 h-3.5" /> Buy Now Directly
             </button>
-            <button
-              onClick={onBid}
-              className="px-3 py-2.5 bg-slate-800 text-slate-200 hover:bg-slate-700 font-bold text-xs rounded-xl border border-slate-700/80 transition-all flex items-center justify-center gap-1.5"
-            >
-              <TrendingUp className="w-3.5 h-3.5 text-teal-400" /> Place Bid
-            </button>
-          </div>
+          ) : (
+            <div className="grid grid-cols-2 gap-2">
+              <button
+                onClick={onBuy}
+                className="px-3 py-2.5 bg-emerald-500 text-slate-950 hover:bg-emerald-400 font-extrabold text-xs rounded-xl transition-all flex items-center justify-center gap-1.5 shadow-md shadow-emerald-500/10"
+              >
+                <ShoppingBag className="w-3.5 h-3.5" /> Buy Now
+              </button>
+              <button
+                onClick={onBid}
+                className="px-3 py-2.5 bg-slate-800 text-slate-200 hover:bg-slate-700 font-bold text-xs rounded-xl border border-slate-700/80 transition-all flex items-center justify-center gap-1.5"
+              >
+                <TrendingUp className="w-3.5 h-3.5 text-teal-400" /> Place Bid
+              </button>
+            </div>
+          )}
 
         </div>
 
