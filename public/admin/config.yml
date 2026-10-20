@@ -1,3 +1,12 @@
+
+backend:
+  name: github
+  repo: wogutierrez/megusta-escatega
+  branch: main
+
+media_folder: "public/uploads"
+public_folder: "/uploads"
+
 collections:
   - name: "catalog"
     label: "Catalog Items"
@@ -7,7 +16,7 @@ collections:
     fields:
       - { label: "Title", name: "title", widget: "string" }
       - { label: "Listing Type", name: "listingType", widget: "select", options: ["auction", "sell"], default: "auction" }
-      - { label: "Item Notes / Flaws / Details", name: "itemNotes", widget: "text", required: false } # 👈 Add this field here
+      - { label: "Item Notes / Flaws / Details", name: "itemNotes", widget: "text", required: false }
       - { label: "Fixed Price ($)", name: "price", widget: "number", value_type: "float", required: false }
       - { label: "Minimum Bid ($)", name: "currentBid", widget: "number", value_type: "float", required: false }
       - { label: "Auction End Date & Time", name: "auctionEndDate", widget: "datetime", date_format: "YYYY-MM-DD", time_format: "HH:mm", required: false }
