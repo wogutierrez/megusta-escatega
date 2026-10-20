@@ -12,11 +12,9 @@ rawItems.forEach(item => {
 });
 
 
-
 const initialItems = rawItems.map(item => ({
-  id: item.slug,
+  id: item.id, // 👈 Correctly use Astro's item.id
   title: item.data.title,
-  // Respect what is in frontmatter; fallback to 'sell' instead of 'auction' if missing
   listingType: item.data.listingType || item.data.listingtype || 'sell',
   auctionEndDate: item.data.auctionEndDate,
   price: item.data.price,

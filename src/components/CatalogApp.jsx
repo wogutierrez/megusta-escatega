@@ -156,25 +156,12 @@ export default function App({ initialItems = [] }) {
 
     try {
 
-      // Add this right before your fetch line:
-      console.log("SENDING BID DATA:", {
-        registeredUser,
-        email: registeredUser?.email,
-        itemId: activeBidItem?.id,
-        itemSlug: activeBidItem?.slug,
-        itemTitle: activeBidItem?.title,
-        bidValue,
-        bidValueType: typeof bidValue
-      });
-
-
-
       const res = await fetch('/api/bid', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           email: registeredUser.email,
-          itemId: activeBidItem.id,
+          itemId: activeBidItem.id || activeBidItem.slug,
           itemTitle: activeBidItem.title,
           bidAmount: bidValue
         })
