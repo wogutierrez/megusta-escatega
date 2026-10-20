@@ -406,4 +406,53 @@ collections:
       <footer className="mt-16 bg-slate-950 border-t border-slate-800/80 py-8 text-xs text-slate-400">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col md:flex-row items-center justify-between gap-4">
           <div className="flex items-center gap-2">
-            <div className="w-6 h-6 rounded-md bg-emerald-500 flex items-center justify-center font-bold text-slate-950 text
+            <div className="w-6 h-6 rounded-md bg-emerald-500 flex items-center justify-center font-bold text-slate-950 text-xs">M</div>
+            <span className="font-semibold text-slate-200">megusta.escatega.com</span>
+            <span className="text-slate-600">•</span>
+            <span>Consignment Direct Network</span>
+          </div>
+          <p className="text-slate-500 text-center md:text-right">
+            Managed via Escatega Admin (<span className="text-slate-400 font-mono">info@escatega.com</span>). Hosted on Cloudflare Pages.
+          </p>
+        </div>
+      </footer>
+
+      {/* Render Modular Modals Component */}
+      <Modals 
+        activeBuyItem={activeBuyItem}
+        setActiveBuyItem={setActiveBuyItem}
+        activeBidItem={activeBidItem}
+        setActiveBidItem={setActiveBidItem}
+        activeHistoryItem={activeHistoryItem}
+        setActiveHistoryItem={setActiveHistoryItem}
+        showConsignmentModal={showConsignmentModal}
+        setShowConsignmentModal={setShowConsignmentModal}
+        showCMSGuide={showCMSGuide}
+        setShowCMSGuide={setShowCMSGuide}
+        showRegisterModal={showRegisterModal}
+        setShowRegisterModal={setShowRegisterModal}
+        showSignInModal={showSignInModal}
+        setShowSignInModal={setShowSignInModal}
+        registeredUser={registeredUser}
+        customBidAmount={customBidAmount}
+        setCustomBidAmount={setCustomBidAmount}
+        regForm={regForm}
+        setRegForm={setRegForm}
+        regLoading={regLoading}
+        regMessage={regMessage}
+        signInEmail={signInEmail}
+        setSignInEmail={setSignInEmail}
+        signInLoading={signInLoading}
+        signInMessage={signInMessage}
+        copiedYaml={copiedYaml}
+        sampleCMSYaml={sampleCMSYaml}
+        handleConfirmBuy={handleConfirmBuy}
+        handlePlaceBid={handlePlaceBid}
+        handleRegisterSubmit={handleRegisterSubmit}
+        handleSignInSubmit={handleSignInSubmit}
+        copyYamlToClipboard={copyYamlToClipboard}
+      />
+
+    </div>
+  );
+}
