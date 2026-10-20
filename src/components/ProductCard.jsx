@@ -11,12 +11,7 @@ import {
 
 /**
  * AuctionCountdown Component
- * Handles the live ticking countdown timer for auction items.
- * Modify the styling or expiration text here if needed.
- */
-/**
- * AuctionCountdown Component
- * Enlarged and formatted to match the action button size with high visibility.
+ * Enlarged digital countdown banner matching button dimensions.
  */
 function AuctionCountdown({ endDate }) {
   const [timeLeft, setTimeLeft] = useState({ days: 0, hours: 0, minutes: 0, seconds: 0, expired: false });
@@ -54,7 +49,6 @@ function AuctionCountdown({ endDate }) {
     );
   }
 
-  // Large, high-visibility digital layout matching button dimensions
   return (
     <div className="w-full py-2 bg-teal-950/60 border border-teal-500/30 rounded-xl px-3 flex items-center justify-between text-teal-300 font-mono shadow-inner">
       <div className="flex items-center gap-1.5 text-xs text-teal-400 font-semibold tracking-wider">
@@ -76,13 +70,12 @@ function AuctionCountdown({ endDate }) {
 
 /**
  * ProductCard Component
- * Renders individual item cards for both direct purchase and auctions.
+ * Renders individual item cards with expandable descriptions and condition notes.
  */
 export default function ProductCard({ item, onBuy, onBid, onViewHistory }) {
-  // State to track which photo is currently displayed in the image carousel
   const [currentImgIndex, setCurrentImgIndex] = useState(0);
+  const [isExpanded, setIsExpanded] = useState(false); // 👈 Expandable description state
 
-  // Combine image arrays or fallback properties into a single list
   const imagesList = (item.images && item.images.length > 0) 
     ? item.images 
     : [item.image, item.image2, item.image3].filter(Boolean);
@@ -91,7 +84,6 @@ export default function ProductCard({ item, onBuy, onBid, onViewHistory }) {
     ? imagesList[currentImgIndex] 
     : 'https://images.unsplash.com/photo-1523275335684-37898b6baf30?auto=format&fit=crop&w=800&q=80';
 
-  // Go to next image in carousel
   const nextImage = (e) => {
     e.stopPropagation();
     if (imagesList.length > 1) {
@@ -99,7 +91,6 @@ export default function ProductCard({ item, onBuy, onBid, onViewHistory }) {
     }
   };
 
-  // Go to previous image in carousel
   const prevImage = (e) => {
     e.stopPropagation();
     if (imagesList.length > 1) {
@@ -107,12 +98,9 @@ export default function ProductCard({ item, onBuy, onBid, onViewHistory }) {
     }
   };
 
-  // Detect whether this item is an auction or a direct buy item
-const rawType = item.listingType || item.listingtype || '';
-const listingTypeLower = String(rawType).toLowerCase().trim();
-
-// Matches 'auction', 'auction item', etc.
-const isAuction = listingTypeLower.includes('auction');
+  const rawType = item.listingType || item.listingtype || '';
+  const listingTypeLower = String(rawType).toLowerCase().trim();
+  const isAuction = listingTypeLower.includes('auction');
 
   return (
     <div className="bg-slate-900/90 border border-slate-800 hover:border-slate-700/80 rounded-2xl overflow-hidden shadow-lg transition-all flex flex-col group">
@@ -143,7 +131,6 @@ const isAuction = listingTypeLower.includes('auction');
           </span>
         </div>
 
-        {/* Carousel Navigation Arrows & Dots (Only shown if multiple images exist) */}
         {imagesList.length > 1 && (
           <>
             <button 
@@ -182,15 +169,34 @@ const isAuction = listingTypeLower.includes('auction');
               {item.title}
             </h3>
           </div>
-          <p className="text-xs text-slate-400 mt-2 line-clamp-2 leading-relaxed">
-            {item.description}
-          </p>
+
+          {/* Expandable Description */}
+          <div className="mt-2">
+            <p className={`text-xs text-slate-300 leading-relaxed ${isExpanded ? '' : 'line-clamp-2'}`}>
+              {item.description}
+            </p>
+            {item.description && item.description.length > 90 && (
+              <button 
+                onClick={(e) => { e.stopPropagation(); setIsExpanded(!isExpanded); }}
+                className="text-[11px] text-emerald-400 hover:text-emerald-300 font-semibold mt-1 transition-colors flex items-center gap-1"
+              >
+                {isExpanded ? 'Show less' : 'Read full description...'}
+              </button>
+            )}
+          </div>
+
+          {/* 👈 Important Item Notes / Flaws Callout Box */}
+          {item.itemNotes && (
+            <div className="mt-3 p-2.5 rounded-xl bg-amber-500/10 border border-amber-500/30 text-amber-300 text-xs flex items-start gap-2">
+              <span className="font-bold shrink-0 uppercase text-[10px] bg-amber-500/20 px-1.5 py-0.5 rounded text-amber-200">Note:</span>
+              <p className="leading-tight">{item.itemNotes}</p>
+            </div>
+          )}
         </div>
 
         {/* 3. PRICING & ACTION BUTTONS */}
         <div className="mt-5 pt-4 border-t border-slate-800/80">
           
-          {/* Conditional Layout: Direct Buy vs Auction Item */}
           {!isAuction ? (
             <div className="mb-4 p-3 rounded-xl bg-slate-950/60 border border-slate-800/80 flex items-center justify-between">
               <div>
@@ -233,7 +239,6 @@ const isAuction = listingTypeLower.includes('auction');
             </button>
           ) : (
             <div className="space-y-2">
-              {/* Prominent clock matching button size */}
               {item.auctionEndDate && (
                 <AuctionCountdown endDate={item.auctionEndDate} />
               )}
