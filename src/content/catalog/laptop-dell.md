@@ -1,7 +1,9 @@
 ---
 title: Laptop Dell
+listingType: Auction Item
 price: 200
 currentBid: 150
+auctionEndDate: 2026-10-22 18:46
 category: Electronics
 condition: As-Is (Very Good)
 image: https://i.ebayimg.com/images/g/shgAAeSwOUNocVcm/s-l960.webp
