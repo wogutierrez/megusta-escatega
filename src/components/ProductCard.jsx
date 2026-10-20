@@ -14,6 +14,10 @@ import {
  * Handles the live ticking countdown timer for auction items.
  * Modify the styling or expiration text here if needed.
  */
+/**
+ * AuctionCountdown Component
+ * Enlarged and formatted to match the action button size with high visibility.
+ */
 function AuctionCountdown({ endDate }) {
   const [timeLeft, setTimeLeft] = useState({ days: 0, hours: 0, minutes: 0, seconds: 0, expired: false });
 
@@ -42,21 +46,31 @@ function AuctionCountdown({ endDate }) {
 
   if (!endDate) return null;
   
-  // Render this if the auction time has run out
   if (timeLeft.expired) {
     return (
-      <span className="text-[10px] text-red-400 font-mono font-semibold bg-red-500/10 px-2 py-0.5 rounded border border-red-500/20 flex items-center gap-1">
-        <Clock className="w-3 h-3" /> Closed
-      </span>
+      <div className="w-full py-2.5 bg-red-500/10 border border-red-500/30 text-red-400 font-mono font-bold text-xs rounded-xl flex items-center justify-center gap-2">
+        <Clock className="w-4 h-4" /> AUCTION CLOSED
+      </div>
     );
   }
 
-  // Render live countdown clock
+  // Large, high-visibility digital layout matching button dimensions
   return (
-    <span className="text-[10px] text-teal-300 font-mono bg-teal-500/10 px-2 py-0.5 rounded border border-teal-500/20 flex items-center gap-1">
-      <Clock className="w-3 h-3 text-teal-400 animate-pulse" />
-      {timeLeft.days}d {timeLeft.hours}h {timeLeft.minutes}m {timeLeft.seconds}s
-    </span>
+    <div className="w-full py-2 bg-teal-950/60 border border-teal-500/30 rounded-xl px-3 flex items-center justify-between text-teal-300 font-mono shadow-inner">
+      <div className="flex items-center gap-1.5 text-xs text-teal-400 font-semibold tracking-wider">
+        <Clock className="w-4 h-4 text-teal-400 animate-pulse shrink-0" />
+        <span>CLOSES IN:</span>
+      </div>
+      <div className="text-xs font-black tracking-tight text-white flex items-center gap-1">
+        <span className="bg-teal-900/80 px-1.5 py-0.5 rounded text-teal-200">{timeLeft.days}d</span>
+        <span className="text-teal-500">:</span>
+        <span className="bg-teal-900/80 px-1.5 py-0.5 rounded text-teal-200">{String(timeLeft.hours).padStart(2, '0')}h</span>
+        <span className="text-teal-500">:</span>
+        <span className="bg-teal-900/80 px-1.5 py-0.5 rounded text-teal-200">{String(timeLeft.minutes).padStart(2, '0')}m</span>
+        <span className="text-teal-500">:</span>
+        <span className="bg-teal-900/80 px-1.5 py-0.5 rounded text-teal-200 animate-pulse">{String(timeLeft.seconds).padStart(2, '0')}s</span>
+      </div>
+    </div>
   );
 }
 
@@ -218,20 +232,18 @@ const isAuction = listingTypeLower.includes('auction');
               <ShoppingBag className="w-3.5 h-3.5" /> Buy Now Directly (${item.price || 0})
             </button>
           ) : (
-            <div className="flex items-center gap-2">
+            <div className="space-y-2">
+              {/* Prominent clock matching button size */}
+              {item.auctionEndDate && (
+                <AuctionCountdown endDate={item.auctionEndDate} />
+              )}
+              
               <button
                 onClick={onBid}
-                className="flex-1 py-2.5 bg-teal-500 text-slate-950 hover:bg-teal-400 font-extrabold text-xs rounded-xl transition-all flex items-center justify-center gap-1.5 shadow-md shadow-teal-500/20"
+                className="w-full py-2.5 bg-teal-500 text-slate-950 hover:bg-teal-400 font-extrabold text-xs rounded-xl transition-all flex items-center justify-center gap-1.5 shadow-md shadow-teal-500/20"
               >
                 <TrendingUp className="w-3.5 h-3.5" /> Place Bid
               </button>
-
-              {/* Live countdown timer badge */}
-              {item.auctionEndDate && (
-                <div className="shrink-0">
-                  <AuctionCountdown endDate={item.auctionEndDate} />
-                </div>
-              )}
             </div>
           )}
 
