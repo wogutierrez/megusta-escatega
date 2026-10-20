@@ -1,6 +1,7 @@
 ---
 title: Hardware and Notebooks | Dell Latitude 5400 14 i5-8365U 1.6GHz 16GB 256GB SSD M.2 Win 11 Pro
-listingType: Auction
+listingType: auction
+itemNotes: Small scratches on surface.
 price: 280
 currentBid: 100
 auctionEndDate: 2026-11-11 19:38
