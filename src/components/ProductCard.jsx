@@ -94,8 +94,11 @@ export default function ProductCard({ item, onBuy, onBid, onViewHistory }) {
   };
 
   // Detect whether this item is an auction or a direct buy item
-  const listingTypeLower = (item.listingType || '').toLowerCase().trim();
-  const isAuction = listingTypeLower.includes('auction') || listingTypeLower.includes('puja');
+const rawType = item.listingType || item.listingtype || '';
+const listingTypeLower = String(rawType).toLowerCase().trim();
+
+// Matches 'auction', 'auction item', etc.
+const isAuction = listingTypeLower.includes('auction');
 
   return (
     <div className="bg-slate-900/90 border border-slate-800 hover:border-slate-700/80 rounded-2xl overflow-hidden shadow-lg transition-all flex flex-col group">

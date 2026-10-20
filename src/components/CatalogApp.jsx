@@ -7,72 +7,15 @@ import {
   X
 } from 'lucide-react';
 
-// Import our newly created modular components
+// Import modular components
 import Header from './Header';
 import ProductCard from './ProductCard';
 import Modals from './Modals';
 
-// Random Pseudonym Generator for Privacy Protection
-const ADJECTIVES = ['Silent', 'Silver', 'Rustic', 'Golden', 'Cosmic', 'Velvet', 'Lunar', 'Nimble', 'Noble', 'Brave'];
-const ANIMALS = ['Panda', 'Falcon', 'Owl', 'Jaguar', 'Otter', 'Fox', 'Eagle', 'Badger', 'Dolphin', 'Lynx'];
-
-const generatePseudonym = () => {
-  const adj = ADJECTIVES[Math.floor(Math.random() * ADJECTIVES.length)];
-  const animal = ANIMALS[Math.floor(Math.random() * ANIMALS.length)];
-  const num = Math.floor(10 + Math.random() * 89);
-  return `${adj}${animal}${num}`;
-};
-
-// Initial Mock Inventory
-const futureDate = new Date(Date.now() + 3 * 24 * 60 * 60 * 1000).toISOString();
-
-const INITIAL_ITEMS = [
-  {
-    id: 'item-1',
-    title: 'Vintage Leather Armchair & Ottoman',
-    listingType: 'Auction Item',
-    auctionEndDate: futureDate,
-    category: 'Furniture',
-    description: 'Genuine full-grain leather armchair in cognac brown. Minor patina near arms, structurally perfect. Kept in smoke-free home.',
-    price: 320,
-    currentBid: 210,
-    minBidIncrement: 10,
-    condition: 'As-Is (Excellent)',
-    location: 'Central District',
-    images: [
-      'https://images.unsplash.com/photo-1586023492125-27b2c045efd7?auto=format&fit=crop&w=800&q=80',
-      'https://images.unsplash.com/photo-1567538096630-e0c55bd6374c?auto=format&fit=crop&w=800&q=80'
-    ],
-    bids: [
-      { id: 'b1', amount: 210, bidder: 'SilverFalcon42', timestamp: '2 hours ago' },
-      { id: 'b2', amount: 195, bidder: 'RusticOwl19', timestamp: '5 hours ago' }
-    ]
-  },
-  {
-    id: 'item-2',
-    title: 'Sony Alpha A7 III Camera Body + FE 50mm Lens',
-    listingType: 'Buy Item',
-    auctionEndDate: null,
-    category: 'Electronics',
-    description: 'Shutter count ~12,400. Includes 2 original batteries, dual charger, and Sony FE 50mm f/1.8 lens. Sensor clean, pristine optics.',
-    price: 1150,
-    currentBid: 0,
-    minBidIncrement: 0,
-    condition: 'As-Is (Like New)',
-    location: 'North Suburbs',
-    images: [
-      'https://images.unsplash.com/photo-1516035069371-29a1b244cc32?auto=format&fit=crop&w=800&q=80'
-    ],
-    bids: []
-  }
-];
-
 const CATEGORIES = ['All', 'Electronics', 'Clothing', 'Furniture', 'Vehicles', 'Real Estate', 'Others'];
 
 export default function App({ initialItems = [] }) {
-  const [items, setItems] = useState(
-    initialItems.length > 0 ? initialItems : INITIAL_ITEMS
-  );
+  const [items, setItems] = useState(initialItems);
   const [selectedCategory, setSelectedCategory] = useState('All');
   const [searchQuery, setSearchQuery] = useState('');
   
@@ -288,7 +231,7 @@ collections:
     slug: "{{slug}}"
     fields:
       - { label: "Title", name: "title", widget: "string" }
-      - { label: "Listing Type", name: "listingType", widget: "select", options: ["Auction Item", "Buy Item"], default: "Auction Item" }
+      - { label: "Listing Type", name: "listingType", widget: "select", options: ["auction", "sell"], default: "auction" }
       - { label: "Fixed Price ($)", name: "price", widget: "number", value_type: "float" }
       - { label: "Minimum Bid ($)", name: "currentBid", widget: "number", value_type: "float", required: false }
       - { label: "Auction End Date & Time", name: "auctionEndDate", widget: "datetime", date_format: "YYYY-MM-DD", time_format: "HH:mm", required: false }
@@ -349,7 +292,7 @@ collections:
           <div className="absolute -right-10 -bottom-10 w-60 h-60 bg-emerald-500/10 rounded-full blur-3xl pointer-events-none" />
           <div className="relative z-10 max-w-3xl">
             <div className="flex items-center gap-2 text-emerald-400 text-xs font-semibold uppercase tracking-wider mb-2">
-              <ShieldCheck className="w-4 h-4" /> Trusted Peer-to-Peer Peer Consignment
+              <ShieldCheck className="w-4 h-4" /> Trusted Peer-to-Peer Consignment
             </div>
             <h1 className="text-2xl sm:text-3xl font-extrabold text-white tracking-tight">
               Curated household goods from verified acquaintances.

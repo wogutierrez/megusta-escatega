@@ -1,6 +1,6 @@
 ---
 title: Test
-listingType: Auction Item
+listingType: "sell"
 price: 100
 currentBid: 5
 auctionEndDate: 2026-10-20 19:14

@@ -1,6 +1,6 @@
 ---
 title: Laptop Dell
-listingType: Auction Item
+listingType: auction
 price: 200
 currentBid: 150
 auctionEndDate: 2026-10-22 18:46

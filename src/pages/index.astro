@@ -3,15 +3,25 @@ import { getCollection } from 'astro:content';
 import Layout from '../layouts/Layout.astro';
 import CatalogApp from '../components/CatalogApp.jsx';
 
-// Fetch all markdown/YAML items created by Sveltia CMS
 const rawItems = await getCollection('catalog');
 
-// Transform Astro entries into a clean array of objects for React
+// 👀 Look at your terminal where `npm run dev` is running when you save/refresh!
+console.log("--- LOCAL ASTRO CONTENT COLLECTION ---");
+rawItems.forEach(item => {
+  console.log(`File: ${item.id} | Title: ${item.data.title} | Type: ${item.data.listingType}`);
+});
+
+
+
 const initialItems = rawItems.map(item => ({
   id: item.slug,
   title: item.data.title,
+  // Respect what is in frontmatter; fallback to 'sell' instead of 'auction' if missing
+  listingType: item.data.listingType || item.data.listingtype || 'sell',
+  auctionEndDate: item.data.auctionEndDate,
   price: item.data.price,
   currentBid: item.data.currentBid,
+  minBidIncrement: item.data.minBidIncrement || 5,
   category: item.data.category,
   condition: item.data.condition,
   image: item.data.image,
@@ -19,6 +29,8 @@ const initialItems = rawItems.map(item => ({
   image3: item.data.image3,
   description: item.data.description,
   sellerTag: item.data.sellerTag,
+  images: [item.data.image, item.data.image2, item.data.image3].filter(Boolean),
+  bids: item.data.bids || [],
   ...item.data
 }));
 ---
