@@ -8,9 +8,9 @@ import {
 } from 'lucide-react';
 
 // Import our newly created modular components
-import Header from './components/Header';
-import ProductCard from './components/ProductCard';
-import Modals from './components/Modals';
+import Header from './Header';
+import ProductCard from './ProductCard';
+import Modals from './Modals';
 
 // Random Pseudonym Generator for Privacy Protection
 const ADJECTIVES = ['Silent', 'Silver', 'Rustic', 'Golden', 'Cosmic', 'Velvet', 'Lunar', 'Nimble', 'Noble', 'Brave'];
