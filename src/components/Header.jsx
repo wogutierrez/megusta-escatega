@@ -36,7 +36,7 @@ export default function Header({
                 Private Network
               </span>
             </div>
-            <p className="text-xs text-slate-400 hidden sm:block">Consignment Direct Network • Mercadito Confiable</p>
+            <p className="text-xs text-slate-400 hidden sm:block">Consignment Direct Network</p>
           </div>
         </div>
 
