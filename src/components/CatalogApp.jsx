@@ -299,7 +299,12 @@ collections:
               Curated household goods from verified acquaintances.
             </h1>
             <p className="mt-2 text-sm text-slate-300 leading-relaxed">
-              Buy directly for a fixed price or submit pseudonymous bids. Bidders stay private with randomized handles. Every transaction is coordinated directly via <span className="font-mono text-emerald-400">info@escatega.com</span> with zero public username disclosures.
+              A Private, Trust-Based Marketplace for Verified Goods. We act as your private consignment coordinator. You tell us what you want to sell, and we take care of the rest for a small handling fee.
+              Because this is a private network built exclusively for trusted members and acquaintances, every transaction is rooted in transparency and accountability:
+              100% Verified: We personally know every seller, inspect every item, and guarantee that all descriptions are honest and accurate.
+              Known Buyers: We deal exclusively with vetted members in our personal network.
+              Total Bidding Privacy: Buy directly at the fixed price or place a pseudonymous bid using randomized handles. Bidders remain completely private.
+              Every offer and transaction is coordinated directly via info@escatega.com—keeping your identity protected with zero public username disclosures.
             </p>
           </div>
         </div>
