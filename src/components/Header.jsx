@@ -30,7 +30,7 @@ export default function Header({
           <div>
             <div className="flex items-center gap-2">
               <span className="font-extrabold text-xl tracking-tight text-white">
-                megusta<span className="text-emerald-400">.escatega.com</span>
+                buy<span className="text-emerald-400">.escatega.com</span>
               </span>
               <span className="px-2 py-0.5 text-[10px] uppercase font-mono tracking-wider bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 rounded-full">
                 Private Network
