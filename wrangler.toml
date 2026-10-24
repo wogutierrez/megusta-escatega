@@ -1,10 +1,11 @@
 name = "megusta-escatega"
+compatibility_date = "2024-03-20"
 pages_build_output_dir = "dist"
-compatibility_date = "2026-10-16"
 
 [[d1_databases]]
 binding = "DB"
 database_name = "megusta-db"
-database_id = "a4decfda-25fb-4311-8273-87b3d813c542"
+database_id = "<YOUR_DATABASE_ID>"
 
-[vars]
+[[kv_namespaces]]
+binding = "SESSION"
