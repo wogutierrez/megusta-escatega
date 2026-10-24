@@ -289,23 +289,37 @@ collections:
       {/* Main Container */}
       <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8">
         
-        <div className="mb-8 p-6 rounded-2xl bg-gradient-to-r from-slate-800/90 via-slate-900 to-slate-900 border border-slate-800 relative overflow-hidden shadow-xl">
+        <div className="mb-8 p-6 sm:p-8 rounded-2xl bg-gradient-to-r from-slate-800/90 via-slate-900 to-slate-900 border border-slate-800 relative overflow-hidden shadow-xl">
           <div className="absolute -right-10 -bottom-10 w-60 h-60 bg-emerald-500/10 rounded-full blur-3xl pointer-events-none" />
-          <div className="relative z-10 max-w-3xl">
-            <div className="flex items-center gap-2 text-emerald-400 text-xs font-semibold uppercase tracking-wider mb-2">
-              <ShieldCheck className="w-4 h-4" /> Trusted Peer-to-Peer Consignment
+          
+          <div className="relative z-10 max-w-4xl mx-auto text-center">
+            <div className="inline-flex items-center gap-2 text-emerald-400 text-xs font-semibold uppercase tracking-wider mb-2">
+              <ShieldCheck className="w-4 h-4" /> Trusted Peer-to-Peer Consignment Network
             </div>
             <h1 className="text-2xl sm:text-3xl font-extrabold text-white tracking-tight">
               Curated household goods from verified acquaintances.
             </h1>
-            <p className="mt-2 text-sm text-slate-300 leading-relaxed">
-              A Private, Trust-Based Marketplace for Verified Goods. We act as your private consignment coordinator. You tell us what you want to sell, and we take care of the rest for a small handling fee.
-              Because this is a private network built exclusively for trusted members and acquaintances, every transaction is rooted in transparency and accountability:
-              100% Verified: We personally know every seller, inspect every item, and guarantee that all descriptions are honest and accurate.
-              Known Buyers: We deal exclusively with vetted members in our personal network.
-              Total Bidding Privacy: Buy directly at the fixed price or place a pseudonymous bid using randomized handles. Bidders remain completely private.
-              Every offer and transaction is coordinated directly via info@escatega.com—keeping your identity protected with zero public username disclosures.
+            
+            <p className="mt-3 text-sm text-slate-300 leading-relaxed max-w-2xl mx-auto">
+              We act as your private consignment coordinator. You tell us what you want to sell, and we take care of the rest for a small handling fee.
             </p>
+
+            {/* Centered Structured Grid for Key Trust Points */}
+            <div className="mt-6 grid grid-cols-1 md:grid-cols-3 gap-4 pt-6 border-t border-slate-800/80 text-xs text-slate-300 max-w-3xl mx-auto justify-center items-stretch">
+              <div className="bg-slate-800/40 p-4 rounded-xl border border-slate-800 text-left flex flex-col justify-start">
+                <span className="font-semibold text-emerald-400 block mb-1.5">✓ 100% Verified</span>
+                <span>We personally know every seller, inspect every item, and guarantee honest, accurate descriptions.</span>
+              </div>
+              <div className="bg-slate-800/40 p-4 rounded-xl border border-slate-800 text-left flex flex-col justify-start">
+                <span className="font-semibold text-emerald-400 block mb-1.5">🔒 Total Bidding Privacy</span>
+                <span>Buy at fixed prices or place pseudonymous bids using randomized handles. Zero public username disclosures.</span>
+              </div>
+              <div className="bg-slate-800/40 p-4 rounded-xl border border-slate-800 text-left flex flex-col justify-start">
+                <span className="font-semibold text-emerald-400 block mb-1.5">✉️ Direct Coordination</span>
+                <span>Every offer, purchase, and delivery is coordinated securely and privately via <span className="font-mono text-emerald-300">info@escatega.com</span>.</span>
+              </div>
+            </div>
+
           </div>
         </div>
 
