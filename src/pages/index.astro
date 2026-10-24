@@ -3,6 +3,7 @@ import { getCollection } from 'astro:content';
 import Layout from '../layouts/Layout.astro';
 import CatalogApp from '../components/CatalogApp.jsx';
 
+// 1. Fetch static items from Content Collections
 const rawItems = await getCollection('catalog');
 
 // 👀 Look at your terminal where `npm run dev` is running when you save/refresh!
@@ -11,26 +12,53 @@ rawItems.forEach(item => {
   console.log(`File: ${item.id} | Title: ${item.data.title} | Type: ${item.data.listingType}`);
 });
 
+// 2. 🟢 Query all active bids from Cloudflare D1 Database
+let allBids = [];
+try {
+  const { results } = await Astro.locals.runtime.env.DB.prepare(
+    "SELECT item_id, amount, pseudonym, created_at FROM bids ORDER BY created_at DESC"
+  ).all();
+  allBids = results || [];
+} catch (err) {
+  console.error("Database query error (bids table might be empty or missing):", err);
+}
 
-const initialItems = rawItems.map(item => ({
-  id: item.id, // 👈 Correctly use Astro's item.id
-  title: item.data.title,
-  listingType: item.data.listingType || item.data.listingtype || 'sell',
-  auctionEndDate: item.data.auctionEndDate,
-  price: item.data.price,
-  currentBid: item.data.currentBid,
-  minBidIncrement: item.data.minBidIncrement || 5,
-  category: item.data.category,
-  condition: item.data.condition,
-  image: item.data.image,
-  image2: item.data.image2,
-  image3: item.data.image3,
-  description: item.data.description,
-  sellerTag: item.data.sellerTag,
-  images: [item.data.image, item.data.image2, item.data.image3].filter(Boolean),
-  bids: item.data.bids || [],
-  ...item.data
-}));
+// 3. Map collection items and hydrate with live database bids
+const initialItems = rawItems.map(item => {
+  // Filter bids matching this specific item's ID
+  const itemBids = allBids
+    .filter(b => b.item_id === item.id)
+    .map(b => ({
+      id: b.created_at,
+      amount: b.amount,
+      bidder: b.pseudonym,
+      timestamp: new Date(b.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+    }));
+
+  // Use the highest live D1 bid if available, otherwise fall back to frontmatter
+  const highestBid = itemBids.length > 0 ? itemBids[0].amount : (item.data.currentBid || 0);
+
+  return {
+    id: item.id, // 👈 Correctly uses Astro's item.id
+    title: item.data.title,
+    // Respect what is in frontmatter; fallback to 'sell' instead of 'auction' if missing
+    listingType: item.data.listingType || item.data.listingtype || 'sell',
+    auctionEndDate: item.data.auctionEndDate,
+    price: item.data.price,
+    currentBid: highestBid, // 👈 Hydrated live from D1
+    minBidIncrement: item.data.minBidIncrement || 5,
+    category: item.data.category,
+    condition: item.data.condition,
+    image: item.data.image,
+    image2: item.data.image2,
+    image3: item.data.image3,
+    description: item.data.description,
+    sellerTag: item.data.sellerTag,
+    images: [item.data.image, item.data.image2, item.data.image3].filter(Boolean),
+    bids: itemBids.length > 0 ? itemBids : (item.data.bids || []), // 👈 Hydrates the bid history drawer from D1
+    ...item.data
+  };
+});
 ---
 
 <Layout title="Consignment Direct Network | megusta.escatega.com">
