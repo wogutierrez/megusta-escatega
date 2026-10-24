@@ -1,17 +1,88 @@
-// @ts-check
-import { defineConfig } from 'astro/config';
-import tailwindcss from '@tailwindcss/vite';
-import react from '@astrojs/react';
-import cloudflare from '@astrojs/cloudflare';
+---
+export const prerender = false;
 
-// https://astro.build/config
-export default defineConfig({
-  output: 'server',
-  adapter: cloudflare(),
+import { getCollection } from 'astro:content';
+import Layout from '../layouts/Layout.astro';
+import CatalogApp from '../components/CatalogApp.jsx';
 
-  vite: {
-    plugins: [tailwindcss()]
-  },
+// 1. Fetch static catalog items
+const rawItems = await getCollection('catalog');
 
-  integrations: [react()]
+// 2. Query megusta-db live via Cloudflare runtime binding
+let allBids = [];
+let dbConnected = false;
+let dbErrorMsg = "";
+
+try {
+  const db = Astro.locals?.runtime?.env?.DB;
+
+  if (db) {
+    dbConnected = true;
+    const { results } = await db.prepare(
+      "SELECT item_id, amount, pseudonym, created_at FROM bids ORDER BY created_at DESC"
+    ).all();
+    allBids = results || [];
+  } else {
+    dbErrorMsg = "D1 binding 'DB' was not detected in Astro.locals.runtime.env";
+  }
+} catch (err) {
+  dbErrorMsg = err.message || "Failed to query database";
+}
+
+// 3. Merge database bids into matching catalog items
+const initialItems = rawItems.map(item => {
+  const itemBids = allBids
+    .filter(b => b.item_id === item.id || b.item_id === item.slug)
+    .map(b => ({
+      id: b.created_at,
+      amount: b.amount,
+      bidder: b.pseudonym,
+      timestamp: new Date(b.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+    }));
+
+  const highestBid = itemBids.length > 0 ? itemBids[0].amount : (item.data.currentBid || 0);
+
+  return {
+    id: item.id,
+    title: item.data.title,
+    listingType: item.data.listingType || item.data.listingtype || 'sell',
+    auctionEndDate: item.data.auctionEndDate,
+    price: item.data.price,
+    currentBid: highestBid,
+    minBidIncrement: item.data.minBidIncrement || 5,
+    category: item.data.category,
+    condition: item.data.condition,
+    image: item.data.image,
+    image2: item.data.image2,
+    image3: item.data.image3,
+    description: item.data.description,
+    sellerTag: item.data.sellerTag,
+    images: [item.data.image, item.data.image2, item.data.image3].filter(Boolean),
+    bids: itemBids.length > 0 ? itemBids : (item.data.bids || []),
+    ...item.data
+  };
 });
+---
+
+<Layout title="Consignment Direct Network | megusta.escatega.com">
+  <div style="background-color: #0f172a; border-bottom: 2px solid #059669; padding: 12px 24px; color: #e2e8f0; font-family: monospace; font-size: 13px;">
+    <div style="max-width: 1280px; margin: 0 auto; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px;">
+      <div>
+        <strong style="color: #34d399;">[D1 DATABASE STATUS]:</strong> 
+        {dbConnected ? (
+          <span style="color: #10b981;"> Connected to megusta-db</span>
+        ) : (
+          <span style="color: #f87171;"> Disconnected ({dbErrorMsg})</span>
+        )}
+      </div>
+      <div>
+        <strong style="color: #34d399;">Total Bids In DB:</strong> {allBids.length} | 
+        <strong style="color: #34d399;">Hydrated Items:</strong> {initialItems.filter(i => i.bids && i.bids.length > 0).length}
+      </div>
+    </div>
+  </div>
+
+  <main>
+    <CatalogApp client:load initialItems={initialItems} />
+  </main>
+</Layout>
