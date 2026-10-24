@@ -25,12 +25,19 @@ export async function onRequestPost(context) {
       );
     }
 
-    // 2. Return success with user pseudonym for local state update (No emails sent on bid)
+    // 2. 🟢 Persist the bid permanently into the D1 'bids' table
+    await env.DB.prepare(
+      "INSERT INTO bids (item_id, amount, user_email, pseudonym) VALUES (?, ?, ?, ?)"
+    )
+      .bind(itemId, bidAmount, email, user.pseudonym)
+      .run();
+
+    // 3. Return success with user pseudonym for local state update
     return new Response(
       JSON.stringify({
         success: true,
         pseudonym: user.pseudonym,
-        message: "Bid recorded successfully."
+        message: "Bid recorded successfully in database."
       }),
       { headers: { "Content-Type": "application/json" } }
     );
