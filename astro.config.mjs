@@ -7,7 +7,10 @@ import cloudflare from '@astrojs/cloudflare';
 // https://astro.build/config
 export default defineConfig({
   output: 'server',
-  adapter: cloudflare(),
+  adapter: cloudflare({
+    imageService: 'passthrough', // 👈 Prevents auto-generating invalid IMAGES/ASSETS bindings
+    session: false               // 👈 Disables auto-generating empty KV SESSION binding
+  }),
 
   vite: {
     plugins: [tailwindcss()]
