@@ -8,8 +8,9 @@ import cloudflare from '@astrojs/cloudflare';
 export default defineConfig({
   output: 'server',
   adapter: cloudflare({
-    imageService: 'passthrough', // 👈 Prevents auto-generating invalid IMAGES/ASSETS bindings
-    session: false               // 👈 Disables auto-generating empty KV SESSION binding
+    platformProxy: {
+      enabled: true
+    }
   }),
 
   vite: {
