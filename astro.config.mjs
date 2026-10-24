@@ -4,9 +4,12 @@ import tailwindcss from '@tailwindcss/vite';
 import react from '@astrojs/react';
 import cloudflare from '@astrojs/cloudflare';
 
-// https://astro.build/config
 export default defineConfig({
   output: 'server',
+
+  // Disable automatic KV session storage
+  session: false,
+
   adapter: cloudflare({
     imageService: 'passthrough'
   }),
