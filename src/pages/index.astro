@@ -1,70 +1,17 @@
----
-export const prerender = false; // 👈 Forces SSR so the server queries D1 on every page visit
+// @ts-check
+import { defineConfig } from 'astro/config';
+import tailwindcss from '@tailwindcss/vite';
+import react from '@astrojs/react';
+import cloudflare from '@astrojs/cloudflare';
 
-import { getCollection } from 'astro:content';
-import Layout from '../layouts/Layout.astro';
-import CatalogApp from '../components/CatalogApp.jsx';
+// https://astro.build/config
+export default defineConfig({
+  output: 'server',
+  adapter: cloudflare(),
 
-// 1. Fetch static items from Content Collections
-const rawItems = await getCollection('catalog');
+  vite: {
+    plugins: [tailwindcss()]
+  },
 
-// 2. Query megusta-db live via Cloudflare runtime binding
-let allBids = [];
-try {
-  const db = Astro.locals?.runtime?.env?.DB;
-
-  if (db) {
-    const { results } = await db.prepare(
-      "SELECT item_id, amount, pseudonym, created_at FROM bids ORDER BY created_at DESC"
-    ).all();
-    allBids = results || [];
-    console.log(`Successfully fetched ${allBids.length} bids from megusta-db.`);
-  } else {
-    console.warn("⚠️ D1 database binding 'DB' not found in Astro.locals.runtime.env");
-  }
-} catch (err) {
-  console.error("Error querying megusta-db:", err);
-}
-
-// 3. Merge database bids into matching catalog items
-const initialItems = rawItems.map(item => {
-  // Match item_id against Astro item.id or file slug
-  const itemBids = allBids
-    .filter(b => b.item_id === item.id || b.item_id === item.slug)
-    .map(b => ({
-      id: b.created_at,
-      amount: b.amount,
-      bidder: b.pseudonym,
-      timestamp: new Date(b.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
-    }));
-
-  // Set current highest bid from D1 if available, otherwise fall back to markdown frontmatter
-  const highestBid = itemBids.length > 0 ? itemBids[0].amount : (item.data.currentBid || 0);
-
-  return {
-    id: item.id,
-    title: item.data.title,
-    listingType: item.data.listingType || item.data.listingtype || 'sell',
-    auctionEndDate: item.data.auctionEndDate,
-    price: item.data.price,
-    currentBid: highestBid, // 👈 Dynamically populated from megusta-db
-    minBidIncrement: item.data.minBidIncrement || 5,
-    category: item.data.category,
-    condition: item.data.condition,
-    image: item.data.image,
-    image2: item.data.image2,
-    image3: item.data.image3,
-    description: item.data.description,
-    sellerTag: item.data.sellerTag,
-    images: [item.data.image, item.data.image2, item.data.image3].filter(Boolean),
-    bids: itemBids.length > 0 ? itemBids : (item.data.bids || []), // 👈 Populates history drawer from megusta-db
-    ...item.data
-  };
+  integrations: [react()]
 });
----
-
-<Layout title="Consignment Direct Network | megusta.escatega.com">
-  <main>
-    <CatalogApp client:load initialItems={initialItems} />
-  </main>
-</Layout>
