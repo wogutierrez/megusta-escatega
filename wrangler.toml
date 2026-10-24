@@ -5,7 +5,7 @@ pages_build_output_dir = "dist"
 [[d1_databases]]
 binding = "DB"
 database_name = "megusta-db"
-database_id = "<YOUR_DATABASE_ID>"
+database_id = "a4decfda-25fb-4311-8273-87b3d813c542"
 
 [[kv_namespaces]]
 binding = "SESSION"
