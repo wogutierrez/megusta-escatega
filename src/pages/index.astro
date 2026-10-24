@@ -1,4 +1,6 @@
 ---
+export const prerender = false; // 👈 Forces SSR so the server queries D1 on every page visit
+
 import { getCollection } from 'astro:content';
 import Layout from '../layouts/Layout.astro';
 import CatalogApp from '../components/CatalogApp.jsx';
@@ -6,28 +8,29 @@ import CatalogApp from '../components/CatalogApp.jsx';
 // 1. Fetch static items from Content Collections
 const rawItems = await getCollection('catalog');
 
-// 👀 Look at your terminal where `npm run dev` is running when you save/refresh!
-console.log("--- LOCAL ASTRO CONTENT COLLECTION ---");
-rawItems.forEach(item => {
-  console.log(`File: ${item.id} | Title: ${item.data.title} | Type: ${item.data.listingType}`);
-});
-
-// 2. 🟢 Query all active bids from Cloudflare D1 Database
+// 2. Query megusta-db live via Cloudflare runtime binding
 let allBids = [];
 try {
-  const { results } = await Astro.locals.runtime.env.DB.prepare(
-    "SELECT item_id, amount, pseudonym, created_at FROM bids ORDER BY created_at DESC"
-  ).all();
-  allBids = results || [];
+  const db = Astro.locals?.runtime?.env?.DB;
+
+  if (db) {
+    const { results } = await db.prepare(
+      "SELECT item_id, amount, pseudonym, created_at FROM bids ORDER BY created_at DESC"
+    ).all();
+    allBids = results || [];
+    console.log(`Successfully fetched ${allBids.length} bids from megusta-db.`);
+  } else {
+    console.warn("⚠️ D1 database binding 'DB' not found in Astro.locals.runtime.env");
+  }
 } catch (err) {
-  console.error("Database query error (bids table might be empty or missing):", err);
+  console.error("Error querying megusta-db:", err);
 }
 
-// 3. Map collection items and hydrate with live database bids
+// 3. Merge database bids into matching catalog items
 const initialItems = rawItems.map(item => {
-  // Filter bids matching this specific item's ID
+  // Match item_id against Astro item.id or file slug
   const itemBids = allBids
-    .filter(b => b.item_id === item.id)
+    .filter(b => b.item_id === item.id || b.item_id === item.slug)
     .map(b => ({
       id: b.created_at,
       amount: b.amount,
@@ -35,17 +38,16 @@ const initialItems = rawItems.map(item => {
       timestamp: new Date(b.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
     }));
 
-  // Use the highest live D1 bid if available, otherwise fall back to frontmatter
+  // Set current highest bid from D1 if available, otherwise fall back to markdown frontmatter
   const highestBid = itemBids.length > 0 ? itemBids[0].amount : (item.data.currentBid || 0);
 
   return {
-    id: item.id, // 👈 Correctly uses Astro's item.id
+    id: item.id,
     title: item.data.title,
-    // Respect what is in frontmatter; fallback to 'sell' instead of 'auction' if missing
     listingType: item.data.listingType || item.data.listingtype || 'sell',
     auctionEndDate: item.data.auctionEndDate,
     price: item.data.price,
-    currentBid: highestBid, // 👈 Hydrated live from D1
+    currentBid: highestBid, // 👈 Dynamically populated from megusta-db
     minBidIncrement: item.data.minBidIncrement || 5,
     category: item.data.category,
     condition: item.data.condition,
@@ -55,7 +57,7 @@ const initialItems = rawItems.map(item => {
     description: item.data.description,
     sellerTag: item.data.sellerTag,
     images: [item.data.image, item.data.image2, item.data.image3].filter(Boolean),
-    bids: itemBids.length > 0 ? itemBids : (item.data.bids || []), // 👈 Hydrates the bid history drawer from D1
+    bids: itemBids.length > 0 ? itemBids : (item.data.bids || []), // 👈 Populates history drawer from megusta-db
     ...item.data
   };
 });
